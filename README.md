@@ -24,3 +24,23 @@ I am going to use the required technologies in the following ways:
 +  **Service** - Backend service with endpoints for logins and third-party APIs.
 +  **DB/Login** - A database will be used to store all application data. User will need to login with the correct credentials to access their calendars.
 +  **WebSocket** - Will be used to enable real-time colloberation features.
+
+## 🚀 AWS deliverable
+
+For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
+
+- [x] **Server deployed and accessible with custom domain name**
+- [My server link](https://simon.planittoday.click).
+
+## 🚀 HTML deliverable
+
+For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
+
+- [x] **HTML pages** - Four different pages. One for each view. `index.html` (Login), `calendar.html`, `about.html`, and `preferences.html`.
+- [x] **Proper HTML element usage** - I spent a lot of time learning about elements. I used header, footer, main, nav, img, a, fieldset, input, button, form, and many more.
+- [x] **Links** - Links between views.
+- [x] **Text** - About page has text.
+- [x] **3rd party API placeholder** - Login page has an option to sign in with Google. There is also an option in the preferences page to sync with Google Calendar.
+- [x] **Login placeholder** - Placeholder for auth on the login page.
+- [x] **WebSocket placeholder** - The calendar page has an option to collabrate with other users.
+
