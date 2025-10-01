@@ -5,7 +5,7 @@
 body {
     margin: 0;
     padding: 0;
-    font-family: 'Inter', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     line-height: 1.6;
     color: #4E4233;
     background-color: #F1E5D1;
@@ -16,13 +16,4 @@ h1, h2, h3, h4 {
     color: #4E4233;
     margin-top: 20px;
     margin-bottom: 10px;
-}
-
-.main-artwork {
-    max-width: 100%;
-    height: auto;
-    width: 200px;
-    display: block;
-    margin: 10px auto;
-    border-radius: 10px;
 }
