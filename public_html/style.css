@@ -28,3 +28,16 @@ header {
     text-align: center;
     padding: 10px 0
 }
+.main-artwork {
+    /* Critical for responsiveness: ensures the image never exceeds its container width */
+    max-width: 100%;
+    height: auto; /* Maintains the image's original aspect ratio */
+
+    /* Example: Set a specific maximum size for desktop viewing */
+    width: 300px;
+    display: block; /* Makes the image take up its own line */
+    margin: 20px auto; /* Centers the image on the page */
+
+    /* Optional: Make the image corners soft and round to match your theme */
+    border-radius: 12px;
+}
