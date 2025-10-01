@@ -37,6 +37,7 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
 
 - [x] **HTML pages** - Four different pages. One for each view. `index.html` (Login), `calendar.html`, `about.html`, and `preferences.html`.
+- [x] **Simon HTML** - I deployed the HTML for Simon to [https://simon.planittoday.click](https://simon.planittoday.click)
 - [x] **Proper HTML element usage** - I spent a lot of time learning about elements. I used header, footer, main, nav, img, a, fieldset, input, button, form, and many more.
 - [x] **Links** - Links between views.
 - [x] **Text** - About page has text.
@@ -44,4 +45,12 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 - [x] **3rd party API placeholder** - Login page has an option to sign in with Google. There is also an option in the preferences page to sync with Google Calendar.
 - [x] **Login placeholder** - Placeholder for auth on the login page.
 - [x] **WebSocket placeholder** - The calendar page has an option to collabrate with other users.
+
+## 🚀 CSS deliverable
+
+For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
+
+- [x] **Simon CSS** - I deployed the CSS for Simon to [https://simon.planittoday.click](https://simon.planittoday.click)
+- [ ] 
+
 
