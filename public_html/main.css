@@ -22,3 +22,19 @@ header {
     text-align: center;
     padding: 10px 0
 }
+
+nav ul {
+    list-style: none;
+    padding: 0;
+
+}
+
+nav li {
+    display: inline;
+    margin-right: 15px;
+}
+
+a {
+    color: #4E4233;
+    text-decoration: none;
+}
