@@ -52,6 +52,10 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
 
 - [x] **Simon CSS** - I deployed the CSS for Simon to [https://simon.planittoday.click](https://simon.planittoday.click)
-- [ ] 
-
-
+- [x] **Colors** - I set the colors for the background as well as the text.
+- [x] **Fonts** - I chose Merriweather for the fonts of the text. The color and font of the texts are styled using **Tailwind** color extensions.
+- [x] **Header, footer, and main content body** - I used a common CSS file named 'main.cpp' to style these. I also used a high-priority common CSS file named 'app.css' to overide certain aspects of 'main.cpp' to achieve global aesthetics. The calendar page has its own 'calendar.css'. **Tailwind Flexbox** is used for the one line logo/title arrangment.
+- [x] **Navigation elements** - I removed the **Tailwind Flexbox** from HTML and adjusted the classes in 'main.css' to create a simple list of buttons.
+- [x] **Responsive to window resizing** Mostly done using **Tailwind** classes like **Flexbox**.
+- [x] **Application elements** - I heavily utilized **Tailwind Flexbox** for the alignment of complex coponents.
+- [x] **Application images** - Adjusted using **Tailwind** utilities and CSS overrides.
