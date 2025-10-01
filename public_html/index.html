@@ -4,23 +4,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Login</title>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'creamy-bg': '#F1E5D1', // Your background color
-                        'sepia-text': '#4E4233', // Your dark text color
-                        'primary-brand': '#6B5B95', // A suggestion for an accent color (a soft purple)
-                    },
-                    fontFamily: {
-                        'montserrat': ['Montserrat', 'sans-serif'],
-                        'merriweather': ['Merriweather', 'serif'],
-                    }
-                }
-            }
-        }
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -29,13 +12,13 @@
 </head>
 <body>
     <header>
-        <h1>PlanIt!<sup>&reg;</sup></h1>
+        <h1 class = "text-xl font-merriweather">PlanIt!<sup>&reg;</sup></h1>
         <img
                 src="logo/planit.png"
                 alt="Stylized illustration of a planet"
                 class="main-artwork"
         >
-        <p>Welcome, please log in</p>
+        <p class = "text-sm font-merriweather">Welcome, please log in</p>
 
         <!-- Navigation elements -->
         <nav>
