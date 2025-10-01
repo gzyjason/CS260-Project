@@ -9,16 +9,19 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="app.css"> <!-- New App CSS Link -->
 </head>
 <body class="bg-creamy-bg text-sepia-text">
 <header class="text-center p-4">
-    <h1>PlanIt!<sup>&reg;</sup></h1>
+    <!-- Removed Tailwind size classes to allow app.css to control font size -->
+    <h1 class="font-merriweather">PlanIt!<sup>&reg;</sup></h1>
     <img
-            class="max-w-full w-52 block mx-auto my-2.5 rounded-xl"
+            class="max-w-full block mx-auto my-2.5 rounded-xl main-artwork"
             src="planit.png"
-            alt="Stylized illustration of a planet"
+    alt="PlanIt logo illustration"
     >
-    <p class = "text-sm opacity-70 font-merriweather">Welcome, <span id="user-name">Guest</span>!</p>
+    <!-- Removed Tailwind size classes to allow app.css to control font size -->
+    <p class="opacity-70 font-merriweather">Welcome, <span id="user-name">Guest</span>!</p>
 
     <!-- Navigation elements -->
     <nav class="mt-4">
@@ -29,97 +32,96 @@
         </ul>
     </nav>
 
-    <!-- Since we don't have the ability to style we use old style HTML to give some visual formatting -->
     <hr class="mt-4 border-t border-sepia-text/30" />
 </header>
 <main class="p-6 max-w-lg mx-auto">
-<h1>Preferences</h1>
+    <h1>Preferences</h1>
 
-<div class="unavailable-times">
-    <label>Unavailable days and times</label>
-    <div class="input-row">
-        <label>
-            Select Day:
-        <select name="day">
-            <option value="">Select Day</option>
-            <option value="sun">Sunday</option>
-            <option value="mon">Monday</option>
-            <option value="tue">Tuesday</option>
-            <option value="wed">Wednesday</option>
-            <option value="thu">Thursday</option>
-            <option value="fri">Friday</option>
-            <option value="sat">Saturday</option>
-        </select>
+    <div class="unavailable-times">
+        <label>Unavailable days and times</label>
+        <div class="input-row">
+            <label>
+                Select Day:
+                <select name="day">
+                    <option value="">Select Day</option>
+                    <option value="sun">Sunday</option>
+                    <option value="mon">Monday</option>
+                    <option value="tue">Tuesday</option>
+                    <option value="wed">Wednesday</option>
+                    <option value="thu">Thursday</option>
+                    <option value="fri">Friday</option>
+                    <option value="sat">Saturday</option>
+                </select>
             </label>
-        <label>
-            Select Time:
-        <select name="time">
-            <option value="">Select Time</option>
-            <option value="1:00">1:00</option>
-            <option value="1:15">1:15</option>
-            <option value="1:30">1:30</option>
-            <option value="1:45">1:45</option>
-            <option value="2:00">2:00</option>
-            <option value="2:15">2:15</option>
-            <option value="2:30">2:30</option>
-            <option value="2:45">2:45</option>
-            <option value="3:00">3:00</option>
-            <option value="3:15">3:15</option>
-            <option value="3:30">3:30</option>
-            <option value="3:45">3:45</option>
-            <option value="4:00">4:00</option>
-            <option value="4:15">4:15</option>
-            <option value="4:30">4:30</option>
-            <option value="4:45">4:45</option>
-            <option value="5:00">5:00</option>
-            <option value="5:15">5:15</option>
-            <option value="5:30">5:30</option>
-            <option value="5:45">5:45</option>
-            <option value="6:00">6:00</option>
-            <option value="6:15">6:15</option>
-            <option value="6:30">6:30</option>
-            <option value="6:45">6:45</option>
-            <option value="7:00">7:00</option>
-            <option value="7:15">7:15</option>
-            <option value="7:30">7:30</option>
-            <option value="7:45">7:45</option>
-            <option value="8:00">8:00</option>
-            <option value="8:15">8:15</option>
-            <option value="8:30">8:30</option>
-            <option value="8:45">8:45</option>
-            <option value="9:00">9:00</option>
-            <option value="9:15">9:15</option>
-            <option value="9:30">9:30</option>
-            <option value="9:45">9:45</option>
-            <option value="10:00">10:00</option>
-            <option value="10:15">10:15</option>
-            <option value="10:30">10:30</option>
-            <option value="10:45">10:45</option>
-            <option value="11:00">11:00</option>
-            <option value="11:15">11:15</option>
-            <option value="11:30">11:30</option>
-            <option value="11:45">11:45</option>
-            <option value="12:00">12:00</option>
-        </select>
+            <label>
+                Select Time:
+                <select name="time">
+                    <option value="">Select Time</option>
+                    <option value="1:00">1:00</option>
+                    <option value="1:15">1:15</option>
+                    <option value="1:30">1:30</option>
+                    <option value="1:45">1:45</option>
+                    <option value="2:00">2:00</option>
+                    <option value="2:15">2:15</option>
+                    <option value="2:30">2:30</option>
+                    <option value="2:45">2:45</option>
+                    <option value="3:00">3:00</option>
+                    <option value="3:15">3:15</option>
+                    <option value="3:30">3:30</option>
+                    <option value="3:45">3:45</option>
+                    <option value="4:00">4:00</option>
+                    <option value="4:15">4:15</option>
+                    <option value="4:30">4:30</option>
+                    <option value="4:45">4:45</option>
+                    <option value="5:00">5:00</option>
+                    <option value="5:15">5:15</option>
+                    <option value="5:30">5:30</option>
+                    <option value="5:45">5:45</option>
+                    <option value="6:00">6:00</option>
+                    <option value="6:15">6:15</option>
+                    <option value="6:30">6:30</option>
+                    <option value="6:45">6:45</option>
+                    <option value="7:00">7:00</option>
+                    <option value="7:15">7:15</option>
+                    <option value="7:30">7:30</option>
+                    <option value="7:45">7:45</option>
+                    <option value="8:00">8:00</option>
+                    <option value="8:15">8:15</option>
+                    <option value="8:30">8:30</option>
+                    <option value="8:45">8:45</option>
+                    <option value="9:00">9:00</option>
+                    <option value="9:15">9:15</option>
+                    <option value="9:30">9:30</option>
+                    <option value="9:45">9:45</option>
+                    <option value="10:00">10:00</option>
+                    <option value="10:15">10:15</option>
+                    <option value="10:30">10:30</option>
+                    <option value="10:45">10:45</option>
+                    <option value="11:00">11:00</option>
+                    <option value="11:15">11:15</option>
+                    <option value="11:30">11:30</option>
+                    <option value="11:45">11:45</option>
+                    <option value="12:00">12:00</option>
+                </select>
             </label>
-        <label>
-            Select AM/PM:
-        <select name="ampm">
-            <option value="">AM/PM</option>
-            <option value="am">AM</option>
-            <option value="pm">PM</option>
-        </select>
+            <label>
+                Select AM/PM:
+                <select name="ampm">
+                    <option value="">AM/PM</option>
+                    <option value="am">AM</option>
+                    <option value="pm">PM</option>
+                </select>
             </label>
-        <button>+</button>
+            <button>+</button>
+        </div>
     </div>
-</div>
 
-<ul>
-    <li><a href="#">Invite User</a></li>
-    <li><a href="#">Sync with Google</a></li>
-    <li><a href="index.html">Logout</a></li>
-</ul>
-
+    <ul>
+        <li><a href="#">Invite User</a></li>
+        <li><a href="#">Sync with Google</a></li>
+        <li><a href="index.html">Logout</a></li>
+    </ul>
+</main>
     <footer class="text-center p-4 text-sepia-text/80">
         <hr class="mb-2 border-t border-sepia-text/30" />
         <span class="text-sm">Source</span><br />
