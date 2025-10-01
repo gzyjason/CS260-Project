@@ -4,28 +4,47 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PlanIt!</title>
+
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'creamy-bg': '#F1E5D1',
+                        'sepia-text': '#4E4233',
+                        'primary-brand': '#6B5B95',
+                    },
+                    fontFamily: {
+                        'montserrat': ['Montserrat', 'sans-serif'],
+                        'merriweather': ['Merriweather', 'serif'],
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Modular CSS -->
     <link rel="stylesheet" href="main.css">
-    <link rel="stylesheet" href="app.css"> <!-- New App CSS Link -->
+    <link rel="stylesheet" href="app.css">
 </head>
 
-<body class="bg-creamy-bg text-sepia-text">
-<!-- REMOVED text-center and adjusted padding p-4 to p-2 -->
-<header class="p-2">
+<body class="font-montserrat text-sepia-text pt-28">
+<header>
     <h1 class="font-merriweather">PlanIt!<sup>&reg;</sup></h1>
     <img
-            class="max-w-full block mx-auto my-2.5 rounded-xl main-artwork"
             src="planit.png"
-            alt="PlanIt logo illustration"
+            alt="Stylized illustration of a planet"
+            class="main-artwork max-w-full rounded-xl"
     >
     <p class="opacity-70 font-merriweather">Welcome, <span id="user-name">Guest</span>!</p>
 
     <!-- Navigation elements -->
     <nav class="mt-4">
-        <!-- REMOVED justify-center -->
         <ul class="flex space-x-6 list-none p-0">
             <li><a class="hover:text-primary-brand transition duration-150" href="about.html">About</a></li>
             <li><a class="hover:text-primary-brand transition duration-150" href="calendar.html">Calendar</a></li>
@@ -36,57 +55,63 @@
     <hr class="mt-4 border-t border-sepia-text/30" />
 </header>
 
-<ul>
-    <li><a href="preferences.html">Set Preferences</a></li>
-    <li><a href="#">Add New Event</a></li>
-    <li><a href="#">Invite User</a></li>
-    <li><a href="#">Sync with Google</a></li>
-</ul>
+<main class="p-6 max-w-4xl mx-auto">
+    <h1 class="text-2xl font-merriweather mb-6">Calendar</h1>
+    <ul>
+        <li><a href="preferences.html">Set Preferences</a></li>
+        <li><a href="#">Add New Event</a></li>
+        <li><a href="#">Invite User</a></li>
+        <li><a href="#">Sync with Google</a></li>
+    </ul>
 
-<div class="container">
-    <div class="day-header">Sun</div>
-    <div class="day-header">Mon</div>
-    <div class="day-header">Tue</div>
-    <div class="day-header">Wed</div>
-    <div class="day-header">Thu</div>
-    <div class="day-header">Fri</div>
-    <div class="day-header">Sat</div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-    <div class="day-header"></div>
-</div>
+    <div class="container">
+        <div class="day-header">Sun</div>
+        <div class="day-header">Mon</div>
+        <div class="day-header">Tue</div>
+        <div class="day-header">Wed</div>
+        <div class="day-header">Thu</div>
+        <div class="day-header">Fri</div>
+        <div class="day-header">Sat</div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+        <div class="day-header"></div>
+    </div>
+</main>
 
 <footer class="text-center p-4 text-sepia-text/80">
     <hr class="mb-2 border-t border-sepia-text/30" />
