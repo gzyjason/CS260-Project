@@ -8,3 +8,27 @@
     overflow: hidden;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
+
+.day-header {
+    padding: 8px 0;
+}
+
+.calendar-day {
+    transition: background-color 0.2s ease;
+}
+
+.calendar-grid .day-header:nth-child(1) {
+    border-top-left-radius: 12px;
+}
+
+.calendar-grid .day-header:nth-child(7) {
+    border-top-right-radius: 12px;
+}
+
+.calendar-grid .calendar-day:nth-child(36) {
+    border-bottom-left-radius: 12px;
+}
+
+.calendar-grid .calendar-day:nth-child(42) {
+    border-bottom-right-radius: 12px;
+}
