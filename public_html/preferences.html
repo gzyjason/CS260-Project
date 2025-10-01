@@ -31,24 +31,19 @@
     <link rel="stylesheet" href="app.css">
 </head>
 <body class="font-montserrat text-sepia-text pt-28">
-<header>
-    <h1 class="font-merriweather">PlanIt!<sup>&reg;</sup></h1>
-    <img
-            src="planit.png"
-            alt="Stylized illustration of a planet"
-            class="main-artwork max-w-full rounded-xl"
-    >
-    <p class="opacity-70 font-merriweather">Welcome, <span id="user-name">Guest</span>!</p>
-
-    <!-- Navigation elements -->
+<header class="flex flex-col"> <div class="flex items-center justify-between w-full">
+    <div class="flex items-center space-x-2">
+        <img
+                src="planit.png"
+                alt="Stylized illustration of a planet"
+                class="main-artwork rounded-xl"
+        >
+        <h1 class="font-merriweather m-0">PlanIt!<sup>&reg;</sup></h1>
+    </div>
+    <p class="opacity-70 font-merriweather text-sm">Welcome, <span id="user-name">Guest</span>!</p>
+</div>
     <nav class="mt-4">
-        <ul class="flex space-x-6 list-none p-0">
-            <li><a class="hover:text-primary-brand transition duration-150" href="about.html">About</a></li>
-            <li><a class="hover:text-primary-brand transition duration-150" href="calendar.html">Calendar</a></li>
-            <li><a class="hover:text-primary-brand transition duration-150" href="preferences.html">Preferences</a></li>
-        </ul>
     </nav>
-
     <hr class="mt-4 border-t border-sepia-text/30" />
 </header>
 <main class="p-6 max-w-lg mx-auto">
