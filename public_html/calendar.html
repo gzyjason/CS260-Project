@@ -13,18 +13,20 @@
 </head>
 
 <body class="bg-creamy-bg text-sepia-text">
-<header class="text-center p-4">
+<!-- REMOVED text-center and adjusted padding p-4 to p-2 -->
+<header class="p-2">
     <h1 class="font-merriweather">PlanIt!<sup>&reg;</sup></h1>
     <img
             class="max-w-full block mx-auto my-2.5 rounded-xl main-artwork"
             src="planit.png"
-    alt="PlanIt logo illustration"
+            alt="PlanIt logo illustration"
     >
     <p class="opacity-70 font-merriweather">Welcome, <span id="user-name">Guest</span>!</p>
 
     <!-- Navigation elements -->
     <nav class="mt-4">
-        <ul class="flex justify-center space-x-6 list-none p-0">
+        <!-- REMOVED justify-center -->
+        <ul class="flex space-x-6 list-none p-0">
             <li><a class="hover:text-primary-brand transition duration-150" href="about.html">About</a></li>
             <li><a class="hover:text-primary-brand transition duration-150" href="calendar.html">Calendar</a></li>
             <li><a class="hover:text-primary-brand transition duration-150" href="preferences.html">Preferences</a></li>

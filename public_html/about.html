@@ -9,40 +9,42 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="app.css"> <!-- New App CSS Link -->
 </head>
 <body class="bg-creamy-bg text-sepia-text">
-    <header class="text-center p-4">
-        <h1 class="font-merriweather">PlanIt!<sup>&reg;</sup></h1>
-        <img
-                class="max-w-full block mx-auto my-2.5 rounded-xl main-artwork"
-                src="planit.png"
-                alt="PlanIt logo illustration"
-        >
-        <p class="opacity-70 font-merriweather">Welcome, <span id="user-name">Guest</span>!</p>
-        <!-- Navigation elements -->
-        <nav class="mt-4">
-            <ul class="flex justify-center space-x-6 list-none p-0">
-                <li><a class="hover:text-primary-brand transition duration-150" href="about.html">About</a></li>
-                <li><a class="hover:text-primary-brand transition duration-150" href="calendar.html">Calendar</a></li>
-                <li><a class="hover:text-primary-brand transition duration-150" href="preferences.html">Preferences</a></li>
-            </ul>
-        </nav>
+<!-- REMOVED text-center and adjusted padding p-4 to p-2 -->
+<header class="p-2">
+    <h1 class="font-merriweather">PlanIt!<sup>&reg;</sup></h1>
+    <img
+            class="max-w-full block mx-auto my-2.5 rounded-xl main-artwork"
+            src="planit.png"
+            alt="PlanIt logo illustration"
+    >
+    <p class="opacity-70 font-merriweather">Welcome, <span id="user-name">Guest</span>!</p>
+    <!-- Navigation elements -->
+    <nav class="mt-4">
+        <!-- REMOVED justify-center -->
+        <ul class="flex space-x-6 list-none p-0">
+            <li><a class="hover:text-primary-brand transition duration-150" href="about.html">About</a></li>
+            <li><a class="hover:text-primary-brand transition duration-150" href="calendar.html">Calendar</a></li>
+            <li><a class="hover:text-primary-brand transition duration-150" href="preferences.html">Preferences</a></li>
+        </ul>
+    </nav>
 
-        <!-- Since we don't have the ability to style we use old style HTML to give some visual formatting -->
-        <hr class="mt-4 border-t border-sepia-text/30" />
-    </header>
-    <h1>What is Planit?</h1>
-    <p>PlanIt is a smart calendar solution that can automatically add your tasks and events to your calendar according to your preferences.</p>
-    <p>It also has built-in collaboration features, so you can work on the perfect plan with everyone in your group.</p>
-    <p>Sign up today to start planning ahead!</p>
+    <hr class="mt-4 border-t border-sepia-text/30" />
+</header>
+<h1>What is Planit?</h1>
+<p>PlanIt is a smart calendar solution that can automatically add your tasks and events to your calendar according to your preferences.</p>
+<p>It also has built-in collaboration features, so you can work on the perfect plan with everyone in your group.</p>
+<p>Sign up today to start planning ahead!</p>
 
-    <footer class="text-center p-4 text-sepia-text/80">
-        <hr class="mb-2 border-t border-sepia-text/30" />
-        <span class="text-sm">Source</span><br />
-        <a class="text-sm hover:text-primary-brand" href="https://github.com/gzyjason/CS260-Project.git">GitHub</a>
-        <hr class="my-2 border-t border-sepia-text/30" />
-        <span class="text-sm">Logo Credit</span><br />
-        <a class="text-sm hover:text-primary-brand" href="https://www.vecteezy.com/free-vector/planet">Planet Vectors by Vecteezy</a>
-    </footer>
+<footer class="text-center p-4 text-sepia-text/80">
+    <hr class="mb-2 border-t border-sepia-text/30" />
+    <span class="text-sm">Source</span><br />
+    <a class="text-sm hover:text-primary-brand" href="https://github.com/gzyjason/CS260-Project.git">GitHub</a>
+    <hr class="my-2 border-t border-sepia-text/30" />
+    <span class="text-sm">Logo Credit</span><br />
+    <a class="text-sm hover:text-primary-brand" href="https://www.vecteezy.com/free-vector/planet">Planet Vectors by Vecteezy</a>
+</footer>
 </body>
 </html>

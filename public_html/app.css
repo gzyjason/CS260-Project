@@ -1,16 +1,27 @@
+header {
+    text-align: left;
+    padding: 10px 10px 0 10px;
+}
+
 header h1 {
-    font-size: 1.5rem; /* Smaller font size for the main heading */
-    margin-bottom: 5px;
+    font-size: 1.5rem;
+    margin-bottom: 2px;
 }
 
-/* Shrink the welcome message/paragraph */
 header p {
-    font-size: 0.9rem; /* Smaller text size */
-    margin-top: 5px;
+    font-size: 0.9rem;
+    margin-top: 2px;
 }
 
-/* Shrink the image/logo */
-.main-artwork {
-    width: 100px !important; /* Forces a smaller width, overriding the w-52 Tailwind class */
-    margin-bottom: 5px;
+header .main-artwork {
+    width: 80px !important;
+    margin: 5px 0 5px 0 !important;
+}
+
+nav ul {
+    justify-content: flex-start !important;
+}
+
+nav ul li {
+    margin-right: 10px;
 }

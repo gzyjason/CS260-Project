@@ -3,8 +3,11 @@
 }
 
 body {
+    padding-top: 112px;
     margin: 0;
-    padding: 0;
+    padding-left: 0;
+    padding-right: 0;
+
     font-family: 'Montserrat', sans-serif;
     line-height: 1.6;
     color: #4E4233;
@@ -19,14 +22,18 @@ h1, h2, h3, h4 {
 }
 
 header {
-    text-align: center;
-    padding: 10px 0
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+
+    background-color: #F1E5D1;
 }
 
 nav ul {
     list-style: none;
     padding: 0;
-
 }
 
 nav li {
@@ -37,4 +44,13 @@ nav li {
 a {
     color: #4E4233;
     text-decoration: none;
+    transition: color 0.15s;
+}
+
+a:hover {
+    color: #6B5B95;
+}
+
+.main-artwork {
+    display: block;
 }
