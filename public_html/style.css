@@ -10,3 +10,9 @@ body {
     color: #4E4233;
     background-color: #F1E5D1;
 }
+h1, h2, h3, h4 {
+    font-family: 'Merriweather', serif;
+    color: #4E4233;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
