@@ -6,7 +6,8 @@
 In the modern age, online calendars are an important part of many people's lives. However, many people often spend a large part of their lives managing their favorite online calendars, checking and adjusting each timeslot to make time for new tasks and events. I believe that being organized should be simple to achieve, so I created PlanIt!, a smart calendar solution that can take in your preferences and do the necessary plannings automatically for you, so that you can actually spend time being productive instead of working toward being productive. 
 
 ### Design
-![MOCK DESIGN PLANIT](https://github.com/user-attachments/assets/3e43c9f6-2483-4251-aaa4-a75d28519d1a)
+![MOCK DESIGN PLANIT](<https://github.com/user-attachments/assets/42d7c38c-18aa-45e5-aa5c-74232c42eae1>)
+
 
 ### Key features
 - Secure login over HTTPS
