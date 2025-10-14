@@ -59,3 +59,11 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 - [x] **Responsive to window resizing** Mostly done using **Tailwind** classes like **Flexbox**.
 - [x] **Application elements** - I heavily utilized **Tailwind Flexbox** for the alignment of complex coponents.
 - [x] **Application images** - Adjusted using **Tailwind** utilities and CSS overrides.
+
+## 🚀 React part 1: Routing deliverable
+
+For this deliverable I did the following. I checked the box [x] and added a description for things I completed. 
+
+- [x] **Bundled using Vite** - Easy to install and use Vite.
+- [x] **Components** - Brought the code over from HTML and CSS.
+- [x] **Tailwind Implementation** - Due to recent updates to Tailwind, React can no longer be directly used to implement it. Craco was used as a workaround as I want to use the newest version of Tailwind.
