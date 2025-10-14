@@ -67,3 +67,5 @@ For this deliverable I did the following. I checked the box [x] and added a desc
 - [x] **Bundled using Vite** - Easy to install and use Vite.
 - [x] **Components** - Brought the code over from HTML and CSS.
 - [x] **Tailwind Implementation** - Due to recent updates to Tailwind, React can no longer be directly used to implement it. Craco was used as a workaround as I want to use the newest version of Tailwind.
+- [x] **Routing** Added the component and page routing.
+- [x] **Redos** Redid many styling elements that were somehow lost when converting from CSS to React.
