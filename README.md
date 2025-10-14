@@ -6,7 +6,8 @@
 In the modern age, online calendars are an important part of many people's lives. However, many people often spend a large part of their lives managing their favorite online calendars, checking and adjusting each timeslot to make time for new tasks and events. I believe that being organized should be simple to achieve, so I created PlanIt!, a smart calendar solution that can take in your preferences and do the necessary plannings automatically for you, so that you can actually spend time being productive instead of working toward being productive. 
 
 ### Design
-![MOCK DESIGN PLANIT](https://github.com/user-attachments/assets/3e43c9f6-2483-4251-aaa4-a75d28519d1a)
+![MOCK DESIGN PLANIT](<https://github.com/user-attachments/assets/42d7c38c-18aa-45e5-aa5c-74232c42eae1>)
+
 
 ### Key features
 - Secure login over HTTPS
@@ -51,6 +52,18 @@ For this deliverable I did the following. I checked the box `[x]` and added a de
 For this deliverable I did the following. I checked the box `[x]` and added a description for things I completed.
 
 - [x] **Simon CSS** - I deployed the CSS for Simon to [https://simon.planittoday.click](https://simon.planittoday.click)
-- [ ] 
+- [x] **Colors** - I set the colors for the background as well as the text.
+- [x] **Fonts** - I chose Merriweather for the fonts of the text. The color and font of the texts are styled using **Tailwind** color extensions.
+- [x] **Header, footer, and main content body** - I used a common CSS file named 'main.cpp' to style these. I also used a high-priority common CSS file named 'app.css' to overide certain aspects of 'main.cpp' to achieve global aesthetics. The calendar page has its own 'calendar.css'. **Tailwind Flexbox** is used for the one line logo/title arrangment.
+- [x] **Navigation elements** - I removed the **Tailwind Flexbox** from HTML and adjusted the classes in 'main.css' to create a simple list of buttons.
+- [x] **Responsive to window resizing** Mostly done using **Tailwind** classes like **Flexbox**.
+- [x] **Application elements** - I heavily utilized **Tailwind Flexbox** for the alignment of complex coponents.
+- [x] **Application images** - Adjusted using **Tailwind** utilities and CSS overrides.
 
+## 🚀 React part 1: Routing deliverable
 
+For this deliverable I did the following. I checked the box [x] and added a description for things I completed. 
+
+- [x] **Bundled using Vite** - Easy to install and use Vite.
+- [x] **Components** - Brought the code over from HTML and CSS.
+- [x] **Tailwind Implementation** - Due to recent updates to Tailwind, React can no longer be directly used to implement it. Craco was used as a workaround as I want to use the newest version of Tailwind.
