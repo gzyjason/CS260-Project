@@ -1,1 +1,50 @@
 @import "tailwindcss";
+
+/* --- Copied from main.css --- */
+*, *::before, *::after {
+    box-sizing: border-box;
+}
+
+body {
+    /* This rule will fix your background color! */
+    background-color: #F1E5D1;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Merriweather', serif;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000;
+    background-color: #F1E5D1; /* Ensures header has same bg color */
+}
+
+/* --- Copied from app.css --- */
+header {
+    text-align: left;
+    padding: 10px 10px 0 10px;
+}
+
+header h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0;
+}
+
+header .main-artwork {
+    width: 40px !important;
+    margin: 0 !important;
+}
+
+nav ul {
+    justify-content: flex-start !important;
+}
+
+nav ul li {
+    margin-right: 10px;
+}
