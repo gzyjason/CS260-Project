@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';  // Add this line
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
