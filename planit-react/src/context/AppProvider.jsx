@@ -3,14 +3,7 @@ import { AppContext } from './AppContext.js';
 
 const AppProvider = ({ children }) => {
     const [userName, setUserName] = useState('Guest');
-    const [events, setEvents] = useState([
-        {
-            id: 1,
-            title: 'CS260 Lecture',
-            date: new Date(2025, 9, 21, 14, 0, 0),
-            durationHours: 1,
-        }
-    ]);
+    const [events, setEvents] = useState([]);
     const [unavailableTimes, setUnavailableTimes] = useState([
         { id: 1, day: 'mon', startTime: '12:00', endTime: '13:00' }
     ]);
