@@ -126,7 +126,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
             onClick={onClose}
         >
             <div
-                className="bg-creamy-bg p-6 rounded-lg shadow-xl w-full max-w-md relative" // Added relative positioning
+                className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative"
                 onClick={e => e.stopPropagation()} // Prevent click inside modal from closing it
             >
                 {/* Close Button */}
