@@ -94,15 +94,15 @@ const Calendar = () => {
                         <button
                             onClick={() => setIsModalOpen(true)}
                             title="Add New Event"
-                            className="flex items-center justify-center p-2 border-2 border-primary-brand rounded-lg bg-transparent text-primary-brand transition duration-200 hover:bg-primary-brand hover:text-white"
+                            className="flex items-center justify-center p-2 border-2 border-[#FFA500] rounded-lg bg-[#FFA500] text-black transition duration-200 hover:opacity-90"
                         >
                             <span className="material-symbols-outlined text-xl font-extrabold leading-none">add</span>
                         </button>
 
-                        <a href="#" title="Share Calendar" className="flex items-center justify-center p-2 border-2 border-primary-brand rounded-lg bg-transparent text-primary-brand transition duration-200 hover:bg-primary-brand hover:text-white">
+                        <a href="#" title="Share Calendar" className="flex items-center justify-center p-2 border-2 border-[#FFA500] rounded-lg bg-[#FFA500] text-black transition duration-200 hover:opacity-90">
                             <span className="material-symbols-outlined text-xl font-extrabold leading-none">share</span>
                         </a>
-                        <a href="#" title="Sync with Google Calendar" className="flex items-center justify-center p-2 border-2 border-primary-brand rounded-lg bg-transparent text-primary-brand transition duration-200 hover:bg-primary-brand hover:text-white">
+                        <a href="#" title="Sync with Google Calendar" className="flex items-center justify-center p-2 border-2 border-[#FFA500] rounded-lg bg-[#FFA500] text-black transition duration-200 hover:opacity-90">
                             <span className="font-bold text-xl">G</span>
                         </a>
                     </div>
