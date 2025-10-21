@@ -83,9 +83,9 @@ const Calendar = () => {
                 <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
                     <h1 className="text-3xl font-merriweather">{monthName} {currentYear}</h1>
                     <div className="flex gap-2">
-                        <button onClick={goToPreviousMonth} className="px-3 py-1 md:px-4 md:py-2 bg-primary-brand text-white rounded hover:bg-primary-brand/90 text-sm md:text-base transition duration-150">&lt; Prev</button>
-                        <button onClick={goToToday} className="px-3 py-1 md:px-4 md:py-2 bg-primary-brand text-white rounded hover:bg-primary-brand/90 text-sm md:text-base transition duration-150">Today</button>
-                        <button onClick={goToNextMonth} className="px-3 py-1 md:px-4 md:py-2 bg-primary-brand text-white rounded hover:bg-primary-brand/90 text-sm md:text-base transition duration-150">Next &gt;</button>
+                        <button onClick={goToPreviousMonth} className="px-3 py-1 md:px-4 md:py-2 bg-[#FFA500] text-black rounded hover:opacity-90 text-sm md:text-base transition duration-150">&lt; Prev</button>
+                        <button onClick={goToToday} className="px-3 py-1 md:px-4 md:py-2 bg-[#FFA500] text-black rounded hover:opacity-90 text-sm md:text-base transition duration-150">Today</button>
+                        <button onClick={goToNextMonth} className="px-3 py-1 md:px-4 md:py-2 bg-[#FFA500] text-black rounded hover:opacity-90 text-sm md:text-base transition duration-150">Next &gt;</button>
                     </div>
                 </div>
 
