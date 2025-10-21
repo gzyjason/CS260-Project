@@ -131,12 +131,12 @@ const Calendar = () => {
                                     key={`${dayObj.date.toISOString()}-${index}`}
                                     className={`${styles.calendarDay} ${dayCellStyle} p-1 md:p-2 cursor-pointer min-h-[100px] md:min-h-[150px] flex flex-col`}
                                 >
-                                    <span className={`font-bold text-xs md:text-sm self-start ${isToday ? 'bg-primary-brand text-white rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center' : ''}`}>
+                                    <span className={`font-bold text-xs md:text-sm self-start ${isToday ? 'bg-[#FFA500] text-black rounded-full w-5 h-5 md:w-6 md:h-6 flex items-center justify-center' : ''}`}>
                                         {dayObj.date.getDate()}
                                     </span>
                                     <div className="flex-grow overflow-auto text-[10px] md:text-xs mt-1 space-y-1">
                                         {dayEvents.map(event => (
-                                            <div key={event.id} className="bg-primary-brand/80 text-white p-1 rounded leading-tight">
+                                            <div key={event.id} className="bg-[#FFA500]/80 text-black p-1 rounded leading-tight">
                                                 {event.date.toLocaleTimeString([], { hour: 'numeric', minute: '2-digit'})} - {event.title}
                                             </div>
                                         ))}
