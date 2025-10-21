@@ -84,7 +84,13 @@ const Preferences = () => {
                             </select>
                         </label>
 
-                        <button type="button" onClick={handleAddTime} className="px-4 py-2 bg-primary-brand text-white rounded hover:bg-primary-brand/90 self-end">+</button>
+                        <button
+                            type="button"
+                            onClick={handleAddTime}
+                            className="px-3 py-2 bg-primary-brand text-black rounded hover:bg-primary-brand/90 self-end text-sm font-semibold"
+                        >
+                            Add Time
+                        </button>
                     </div>
 
                     {/* Render unavailable list */}

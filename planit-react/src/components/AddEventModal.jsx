@@ -122,11 +122,11 @@ const AddEventModal = ({ isOpen, onClose }) => {
 
     return (
         <div
-            className="fixed inset-0 bg-black/50 z-[1050] flex justify-center items-center" // Increased z-index
+            className="fixed inset-0 bg-black/50 z-[1050] flex justify-center items-center p-4"
             onClick={onClose}
         >
             <div
-                className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative"
+                className="bg-white p-6 rounded-lg shadow-xl w-full max-w-md relative min-h-[300px] max-h-[90vh] overflow-y-auto flex flex-col"
                 onClick={e => e.stopPropagation()} // Prevent click inside modal from closing it
             >
                 {/* Close Button */}
@@ -139,7 +139,7 @@ const AddEventModal = ({ isOpen, onClose }) => {
                 </button>
 
                 <h2 className="text-2xl font-merriweather mb-4">Add New Task</h2>
-                <div className="space-y-4">
+                <div className="space-y-4 pb-4 flex-grow">
                     <div>
                         <label htmlFor="task-title" className="block font-bold mb-1 text-sepia-text">Task Title:</label>
                         <input
@@ -166,14 +166,20 @@ const AddEventModal = ({ isOpen, onClose }) => {
                             ))}
                         </select>
                     </div>
-
-                    <button
-                        onClick={handleSmartSchedule}
-                        className="w-full bg-primary-brand text-white py-2 px-4 rounded hover:bg-primary-brand/90 transition duration-150"
-                    >
-                        Find Slot & Schedule Automatically
-                    </button>
                 </div>
+                <button
+                    onClick={handleSmartSchedule}
+                    className="w-full py-2 px-4 rounded hover:opacity-90 transition duration-150 mt-4 border-2 shadow-md"
+                    style={{
+                        backgroundColor: '#FFA500', // Orange background
+                        color: 'black', // Black text
+                        borderColor: '#FFA500', // Orange border
+                        opacity: 1, // Ensure full visibility
+                        minHeight: '44px' // Touch-friendly height
+                    }}
+                >
+                    Find Slot & Schedule Automatically
+                </button>
             </div>
         </div>
     );
