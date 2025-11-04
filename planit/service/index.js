@@ -70,14 +70,134 @@ apiRouter.delete('/auth/logout', async (req, res) => {
     res.clearCookie(authCookieName);
     res.status(204).end();
 });
+
+
+let events = {};
+let unavailableTimes = {};
+
+/**
+ * Middleware to verify that the user is authorized.
+ * This is a modified version of the Simon example's verifyAuth.
+ * It attaches the user object to the request for easier access in endpoints.
+ */
 const verifyAuth = async (req, res, next) => {
     const user = await findUser('token', req.cookies[authCookieName]);
     if (user) {
+        // Attach the user object to the request
+        req.user = user;
         next();
     } else {
         res.status(401).send({ msg: 'Unauthorized' });
     }
 };
+
+// === EVENT ENDPOINTS ===
+
+// GetEvents: Get all events for the logged-in user
+apiRouter.get('/events', verifyAuth, (req, res) => {
+    const userEmail = req.user.email;
+    // Ensure the user has an event array initialized
+    if (!events[userEmail]) {
+        events[userEmail] = [];
+    }
+    res.send(events[userEmail]);
+});
+
+// CreateEvent: Add a new event for the logged-in user
+apiRouter.post('/events', verifyAuth, (req, res) => {
+    const userEmail = req.user.email;
+    const newEvent = req.body;
+
+    // Assign a server-side ID and owner
+    newEvent.id = uuid.v4();
+    newEvent.ownerEmail = userEmail;
+
+    // Ensure the user has an event array initialized
+    if (!events[userEmail]) {
+        events[userEmail] = [];
+    }
+
+    events[userEmail].push(newEvent);
+
+    // Send back the newly created event (with its ID)
+    res.status(201).send(newEvent);
+});
+
+// === UNAVAILABLE TIMES ENDPOINTS ===
+
+// GetUnavailableTimes: Get all unavailable times for the logged-in user
+apiRouter.get('/unavailable', verifyAuth, (req, res) => {
+    const userEmail = req.user.email;
+
+    // Initialize with default value if user has no times set
+    // This matches your AppProvider's initial state
+    if (!unavailableTimes[userEmail]) {
+        unavailableTimes[userEmail] = [
+            {
+                id: uuid.v4(),
+                day: 'mon',
+                startTime: '12:00',
+                endTime: '13:00',
+                ownerEmail: userEmail
+            }
+        ];
+    }
+
+    res.send(unavailableTimes[userEmail]);
+});
+
+// AddUnavailableTime: Add a new unavailable time block
+apiRouter.post('/unavailable', verifyAuth, (req, res) => {
+    const userEmail = req.user.email;
+    const newTime = req.body;
+
+    // Assign server-side ID and owner
+    newTime.id = uuid.v4();
+    newTime.ownerEmail = userEmail;
+
+    // Initialize if needed (same as GET)
+    if (!unavailableTimes[userEmail]) {
+        unavailableTimes[userEmail] = [
+            {
+                id: uuid.v4(),
+                day: 'mon',
+                startTime: '12:00',
+                endTime: '13:00',
+                ownerEmail: userEmail
+            }
+        ];
+    }
+
+    unavailableTimes[userEmail].push(newTime);
+
+    res.status(201).send(newTime);
+});
+
+// DeleteUnavailableTime: Remove an unavailable time block
+apiRouter.delete('/unavailable/:id', verifyAuth, (req, res) => {
+    const userEmail = req.user.email;
+    const { id } = req.params;
+
+    // Ensure the user's array exists
+    if (unavailableTimes[userEmail]) {
+        const initialLength = unavailableTimes[userEmail].length;
+        unavailableTimes[userEmail] = unavailableTimes[userEmail].filter(
+            (time) => time.id !== id
+        );
+
+        if (unavailableTimes[userEmail].length === initialLength) {
+            // Nothing was deleted (ID not found)
+            return res.status(404).send({ msg: 'Time block not found' });
+        }
+    }
+
+    // Send "No Content" success status
+    res.status(204).end();
+});
+
+// =================================================================
+// == END: PlanIt Data Endpoints
+// =================================================================
 
 async function findUser(field, value) {
     if (!value) return null;
