@@ -69,3 +69,9 @@ For this deliverable I did the following. I checked the box [x] and added a desc
 - [x] **Tailwind Implementation** - Due to recent updates to Tailwind, React can no longer be directly used to implement it. Craco was used as a workaround as I want to use the newest version of Tailwind.
 - [x] **Routing** Added the component and page routing.
 - [x] **Redos** Redid many styling elements that were somehow lost when converting from CSS to React.
+
+## 🚀 React part 2: Reactivity
+
+- [x] **React Context API** Implemented React Context API to manage shared application state (user name, events, unavailable times).
+- [x] **ESLint** Refactored context implementation into a standard 3-file structure to comply with ESLint
+- [x] **Functionality** Added functionality to event adding and preference setting; added mocked functionality for other functions. 
