@@ -91,7 +91,6 @@ const verifyAuth = async (req, res, next) => {
     }
 };
 
-// === EVENT ENDPOINTS ===
 
 // GetEvents: Get all events for the logged-in user
 apiRouter.get('/events', verifyAuth, (req, res) => {
@@ -195,9 +194,6 @@ apiRouter.delete('/unavailable/:id', verifyAuth, (req, res) => {
     res.status(204).end();
 });
 
-// =================================================================
-// == END: PlanIt Data Endpoints
-// =================================================================
 
 async function findUser(field, value) {
     if (!value) return null;
