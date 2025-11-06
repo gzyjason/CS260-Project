@@ -138,6 +138,58 @@ apiRouter.get('/auth/google', async (req, res) => {
     }
 });
 
+apiRouter.post('/api/google/sync', verifyAuth, async (req, res) => {
+    const userEmail = req.user.email;
+    const { events: planItEvents } = req.body; // Get events from frontend
+
+    // 1. Get the user's saved refresh_token
+    const refreshToken = googleRefreshTokens[userEmail];
+    if (!refreshToken) {
+        return res.status(400).send({ msg: 'User has not authorized Google Calendar. Please "Sync with Google" first.' });
+    }
+
+    try {
+        // 2. Create an auth'd client using the refresh_token
+        const oAuth2Client = await getOAuth2Client();
+        oAuth2Client.setCredentials({
+            refresh_token: refreshToken
+        });
+
+        // 3. Initialize the Google Calendar API
+        const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
+
+        // 4. Loop through events from frontend and add them to Google
+        let createdCount = 0;
+        for (const event of planItEvents) {
+            // Format the event for Google Calendar
+            const googleEvent = {
+                summary: event.title,
+                description: 'Scheduled by PlanIt!',
+                start: {
+                    dateTime: new Date(event.date).toISOString(), // Use full ISO string
+                    timeZone: 'America/Denver', // You can make this dynamic later
+                },
+                end: {
+                    dateTime: new Date(new Date(event.date).getTime() + event.durationHours * 60 * 60 * 1000).toISOString(),
+                    timeZone: 'America/Denver',
+                },
+            };
+
+            // 5. Insert the event
+            await calendar.events.insert({
+                calendarId: 'primary', // 'primary' means the user's main calendar
+                resource: googleEvent,
+            });
+            createdCount++;
+        }
+
+        res.status(200).send({ msg: `Successfully synced ${createdCount} events to Google Calendar.` });
+
+    } catch (err) {
+        console.error('Error syncing to Google Calendar:', err);
+        res.status(500).send({ msg: 'Error syncing events', error: err.message });
+    }
+});
 
 apiRouter.get('/auth/google/callback', verifyAuth, async (req, res) => {
     const { code } = req.query; // The authorization code from Google
