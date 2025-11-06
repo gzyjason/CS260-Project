@@ -1,22 +1,24 @@
 import { useState } from 'react';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-// We no longer need Link here, as logout is a button
 import { useAppContext } from '../hooks/useAppContext.js';
 
 const Preferences = () => {
-    // 1. Get all the data and functions we need from the context
+    // 1. Get all functions AND the 'events' state
     const {
         unavailableTimes,
         addUnavailableTime,
         removeUnavailableTime,
-        logout
+        logout,
+        events // <-- ADD THIS
     } = useAppContext();
 
     const [day, setDay] = useState('');
     const [startTime, setStartTime] = useState('');
     const [endTime, setEndTime] = useState('');
+    const [syncMessage, setSyncMessage] = useState(null); // For sync feedback
 
+    // ... (keep all the existing consts: days, times, availableEndTimes)
     const days = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
     const times = Array.from({ length: 48 }, (_, i) => {
         const hour = Math.floor(i / 2); // 24-hour format
@@ -31,7 +33,7 @@ const Preferences = () => {
             return endHour > startHour || (endHour === startHour && endMin > startMin);
         })
         : [];
-
+    // ... (keep handleAddTime and handleRemoveTime functions)
     const handleAddTime = () => {
         if (!day || !startTime || !endTime) {
             alert('Please select a day, start time, and end time.');
@@ -43,36 +45,59 @@ const Preferences = () => {
             alert('End time must be after start time.');
             return;
         }
-
-        // 2. Create the new time block object
         const newUnavailable = {
-            // The server will assign the ID
             day: day,
             startTime: startTime,
             endTime: endTime
         };
-
-        // 3. Call the context function to add the time
         addUnavailableTime(newUnavailable);
-
-        // Reset local form state
         setDay('');
         setStartTime('');
         setEndTime('');
     };
 
     const handleRemoveTime = (id) => {
-        // 4. Call the context function to remove the time
         removeUnavailableTime(id);
     };
+
+
+    // 2. Add the new sync function
+    const handleGoogleSync = async () => {
+        setSyncMessage('Syncing...'); // Show feedback
+        try {
+            const response = await fetch('/api/google/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ events: events }) // Send all events
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                setSyncMessage(result.msg); // "Successfully synced 5 events..."
+                alert(result.msg);
+            } else {
+                setSyncMessage(`Error: ${result.msg}`);
+                alert(`Error: ${result.msg}`);
+            }
+        } catch (err) {
+            const msg = `Network error: ${err.message}`;
+            setSyncMessage(msg);
+            alert(msg);
+        }
+    };
+
 
     return (
         <>
             <Header />
             <main className="p-6 max-w-lg mx-auto pt-28 bg-creamy-bg">
                 <h1 className="text-2xl font-merriweather mb-6">Preferences</h1>
+
+                {/* ... (keep your 'unavailable-times' div) ... */}
                 <div className="unavailable-times mb-8">
                     <label className="block font-bold mb-2">Unavailable days and times</label>
+                    {/* ... (input row) ... */}
                     <div className="input-row flex flex-wrap gap-4 mb-2 items-end">
                         <label className="flex flex-col">
                             Day:
@@ -95,7 +120,6 @@ const Preferences = () => {
                                 {availableEndTimes.map(time => <option key={time} value={time}>{time}</option>)}
                             </select>
                         </label>
-
                         <button
                             type="button"
                             onClick={handleAddTime}
@@ -104,8 +128,7 @@ const Preferences = () => {
                             Add Time
                         </button>
                     </div>
-
-                    {/* Render unavailable list */}
+                    {/* ... (unavailable list) ... */}
                     <div className="mt-4 space-y-2">
                         <h3 className="font-bold">Current Unavailable Times:</h3>
                         {unavailableTimes.length === 0 ? (
@@ -115,7 +138,6 @@ const Preferences = () => {
                                 {unavailableTimes.map(time => (
                                     <li key={time.id} className="flex justify-between items-center">
                                         <span>{time.day.charAt(0).toUpperCase() + time.day.slice(1)}: {time.startTime} - {time.endTime}</span>
-                                        {/* 5. Hook up the remove button */}
                                         <button onClick={() => handleRemoveTime(time.id)} className="text-red-500 text-xs hover:underline ml-2">Remove</button>
                                     </li>
                                 ))}
@@ -124,15 +146,29 @@ const Preferences = () => {
                     </div>
                 </div>
 
-                {/* 6. Update Links */}
-                <ul className="space-y-2">
-                    {/* This link is for WebSocket, not yet implemented, so leave as # */}
-                    <li><a href="#" className="text-primary-brand hover:underline">Invite User</a></li>
+                {/* 3. Add the Sync Button and message */}
+                <div className="google-sync mb-8">
+                    <h3 className="text-xl font-merriweather mb-2">Integrations</h3>
+                    <p className="text-sm mb-2">First, authorize Google. Then, you can sync your events.</p>
+                    <ul className="space-y-2">
+                        {/* This <a> tag starts the auth flow */}
+                        <li><a href="/api/auth/google" className="text-primary-brand hover:underline">1. Authorize with Google</a></li>
 
-                    {/* This is now a real <a> tag pointing to our backend auth endpoint */}
-                    // src/pages/Preferences.jsx
-                    <li><a href="/api/auth/google" className="text-primary-brand hover:underline">Sync with Google</a></li>
-                    {/* This is now a button that calls the logout function */}
+                        {/* This <button> runs the sync */}
+                        <li>
+                            <button onClick={handleGoogleSync} className="text-primary-brand hover:underline p-0 m-0 bg-transparent border-none cursor-pointer">
+                                2. Sync PlanIt! Events to Google
+                            </button>
+                        </li>
+                    </ul>
+                    {syncMessage && <p className="text-sm mt-2">{syncMessage}</p>}
+                </div>
+
+
+                {/* ... (keep your links list, but remove Google one) ... */}
+                <h3 className="text-xl font-merriweather mb-2">Account</h3>
+                <ul className="space-y-2">
+                    <li><a href="#" className="text-primary-brand hover:underline">Invite User</a></li>
                     <li>
                         <button onClick={logout} className="text-primary-brand hover:underline p-0 m-0 bg-transparent border-none cursor-pointer">
                             Logout
