@@ -144,10 +144,12 @@ async function getOAuth2Client() {
         console.log("Using Redirect URI:", redirect_uri); // For debugging
         // === END OF FIX ===
 
+        const redirectUri = 'https://startup.planittoday.click/api/auth/google/callback';
+
         const oAuth2Client = new google.auth.OAuth2(
             client_id,
             client_secret,
-            redirect_uri // Use our new dynamic variable
+            redirect_uri
         );
         return oAuth2Client;
     } catch (err) {
