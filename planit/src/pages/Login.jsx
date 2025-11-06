@@ -1,22 +1,26 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Navigate } from 'react-router-dom'; // 1. Add Navigate
 import { useState } from 'react';
-// We no longer import useAppContext here, as login is handled by the server.
+import { useAppContext } from '../hooks/useAppContext'; // 2. Import context
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 
 const Login = () => {
     const navigate = useNavigate();
+    // 3. Get userName AND setUserName from context
+    const { userName, setUserName } = useAppContext();
 
-    // We now need state for password and any error messages
     const [usernameInput, setUsernameInput] = useState('');
     const [password, setPassword] = useState('');
     const [displayError, setDisplayError] = useState(null);
 
-    // This function is based on Simon's loginOrCreate
-    async function loginOrCreate(endpoint) {
-        // Clear any previous errors
-        setDisplayError(null);
+    // 4. This is your new redirect logic
+    // If user is already logged in (not 'Guest'), redirect them.
+    if (userName && userName !== 'Guest') {
+        return <Navigate to="/calendar" replace />;
+    }
 
+    async function loginOrCreate(endpoint) {
+        setDisplayError(null);
         try {
             const response = await fetch(endpoint, {
                 method: 'post',
@@ -27,27 +31,23 @@ const Login = () => {
             });
 
             if (response.ok) {
-                // Get the user's email back from the server
                 const user = await response.json();
 
-                // Store the username in localStorage (like Simon)
-                localStorage.setItem('userName', user.email);
+                // 5. Call setUserName from context.
+                // This updates localStorage AND triggers AppProvider to fetch data.
+                setUserName(user.email);
 
-                // Navigate to the calendar.
-                // We will later update App.jsx to detect this change and
-                // update the AppProvider state.
-                navigate('/calendar');
+                navigate('/calendar'); // Navigate after state is set
             } else {
-                // If the server sends a 401, 409, etc.
                 const body = await response.json();
                 setDisplayError(`⚠ Error: ${body.msg}`);
             }
         } catch (err) {
-            // For network errors
             setDisplayError(`⚠ Network error: ${err.message}`);
         }
     }
 
+    // The rest of your JSX return is perfect.
     return (
         <>
             <Header />
@@ -55,7 +55,6 @@ const Login = () => {
                 <h1 className="text-2xl font-merriweather text-center mb-6">Login Page</h1>
                 <p className="text-center mb-4">Please log in or create an account.</p>
 
-                {/* We replace the <form> with a <div> to handle multiple buttons */}
                 <div className="p-6 bg-white/50 rounded-lg shadow-lg">
                     <div className="mb-4">
                         <label htmlFor="username" className="block text-sepia-text font-bold mb-1">Email:</label>
@@ -80,7 +79,6 @@ const Login = () => {
                         />
                     </div>
 
-                    {/* Simple error display (replaces Simon's MessageDialog) */}
                     {displayError && (
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                             <span className="block sm:inline">{displayError}</span>
@@ -93,7 +91,6 @@ const Login = () => {
                         </div>
                     )}
 
-                    {/* We now have two buttons, just like Simon */}
                     <div className="flex flex-col sm:flex-row gap-4">
                         <button
                             type="button"
