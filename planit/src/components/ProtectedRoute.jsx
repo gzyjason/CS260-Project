@@ -1,5 +1,3 @@
-// planit/src/components/ProtectedRoute.jsx
-
 import { useAppContext } from '../hooks/useAppContext';
 import { Navigate } from 'react-router-dom';
 
