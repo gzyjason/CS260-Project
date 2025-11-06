@@ -75,3 +75,8 @@ For this deliverable I did the following. I checked the box [x] and added a desc
 - [x] **React Context API** Implemented React Context API to manage shared application state (user name, events, unavailable times).
 - [x] **ESLint** Refactored context implementation into a standard 3-file structure to comply with ESLint
 - [x] **Functionality** Added functionality to event adding and preference setting; added mocked functionality for other functions. 
+
+## 🚀 Service
+
+**Note for Graders:** To test the Google Calendar (third-party API) integration, please go to the "Preferences" page and click "Sync with Google." You will see a "Google hasn't verified this app" warning. This is expected. Please click "Advanced" and then "Go to planittoday.click (unsafe)" to proceed with the test. I have put all available Gmails for TAs and Professors that I could find as test users.
+
