@@ -130,8 +130,8 @@ const Preferences = () => {
                     <li><a href="#" className="text-primary-brand hover:underline">Invite User</a></li>
 
                     {/* This is now a real <a> tag pointing to our backend auth endpoint */}
+                    // src/pages/Preferences.jsx
                     <li><a href="/api/auth/google" className="text-primary-brand hover:underline">Sync with Google</a></li>
-
                     {/* This is now a button that calls the logout function */}
                     <li>
                         <button onClick={logout} className="text-primary-brand hover:underline p-0 m-0 bg-transparent border-none cursor-pointer">
