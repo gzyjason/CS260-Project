@@ -3,6 +3,8 @@ const bcrypt = require('bcryptjs');
 const express = require('express');
 const { MongoClient } = require('mongodb'); // <-- Add MongoDB
 const uuid = require('uuid');
+const { google } = require('googleapis');
+const fs = require('fs').promises; // Used to read your client_secret.json
 
 const app = express();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
@@ -90,7 +92,102 @@ const verifyAuth = async (req, res, next) => {
         res.status(401).send({ msg: 'Unauthorized' });
     }
 };
+// =================================================================
+// == START: Google Calendar API Endpoints (Part 2, Step 3)
+// =================================================================
 
+const GOOGLE_SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
+const CREDENTIALS_PATH = 'client_secret.json'; // Path to your downloaded file
+
+/**
+ * Creates a new OAuth2 client with the credentials from client_secret.json
+ */
+async function getOAuth2Client() {
+    try {
+        const content = await fs.readFile(CREDENTIALS_PATH);
+        const credentials = JSON.parse(content);
+        const { client_secret, client_id, redirect_uris } = credentials.web;
+
+        // Make sure you use the correct redirect URI
+        // For local, this is http://localhost:4000/api/auth/google/callback
+        const oAuth2Client = new google.auth.OAuth2(
+            client_id,
+            client_secret,
+            redirect_uris[0] // Assumes the first URI is your intended callback
+        );
+        return oAuth2Client;
+    } catch (err) {
+        console.error('Error loading client secret file:', err);
+        throw new Error('Could not load client secret file.');
+    }
+}
+
+/**
+ * Endpoint 1: Redirects the user to Google's consent screen
+ */
+apiRouter.get('/auth/google', async (req, res) => {
+    try {
+        const oAuth2Client = await getOAuth2Client();
+
+        const authUrl = oAuth2Client.generateAuthUrl({
+            access_type: 'offline', // 'offline' is required to get a refresh_token
+            scope: GOOGLE_SCOPES,
+            prompt: 'consent', // Forces the user to re-consent, which ensures you get a refresh_token
+        });
+
+        res.redirect(authUrl);
+    } catch (err) {
+        res.status(500).send({ msg: 'Error generating Google auth URL', error: err.message });
+    }
+});
+
+
+apiRouter.get('/auth/google/callback', verifyAuth, async (req, res) => {
+    const { code } = req.query; // The authorization code from Google
+
+    if (!code) {
+        return res.status(400).send('Missing authorization code');
+    }
+
+    try {
+        const oAuth2Client = await getOAuth2Client();
+        const { tokens } = await oAuth2Client.getToken(code);
+
+        // IMPORTANT: tokens.refresh_token is what you must save!
+        // You only get a refresh_token the *first* time a user authorizes.
+        console.log('Received Google Tokens:', tokens);
+
+        if (tokens.refresh_token) {
+            //
+            // === TODO: SAVE THE REFRESH TOKEN TO YOUR DATABASE ===
+            //
+            // const userEmail = req.user.email;
+            // await db.collection('users').updateOne(
+            //   { email: userEmail },
+            //   { $set: { googleRefreshToken: tokens.refresh_token } }
+            // );
+            //
+            console.log('SUCCESS: Got a refresh_token. Save this to your database!');
+        } else {
+            console.log('NOTE: No refresh_token received. User likely already authorized.');
+        }
+
+        // For now, just store the access_token in the session (or in memory)
+        // In a real app, you'd save the refresh_token and use it later.
+        oAuth2Client.setCredentials(tokens);
+
+        // Redirect the user back to your frontend preferences page
+        res.redirect('/preferences');
+
+    } catch (err) {
+        console.error('Error exchanging Google token:', err);
+        res.status(500).send({ msg: 'Error exchanging Google token', error: err.message });
+    }
+});
+
+// =================================================================
+// == END: Google Calendar API Endpoints
+// =================================================================
 
 // GetEvents: Get all events for the logged-in user
 apiRouter.get('/events', verifyAuth, (req, res) => {
