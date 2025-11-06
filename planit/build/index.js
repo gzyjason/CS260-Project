@@ -131,30 +131,24 @@ async function getOAuth2Client() {
     try {
         const content = await fs.readFile(CREDENTIALS_PATH);
         const credentials = JSON.parse(content);
-        const { client_secret, client_id, redirect_uris } = credentials.web;
+        const { client_secret, client_id } = credentials.web;
 
-        // === THIS IS THE FIX ===
-        // Check if we are in production
-        const isProduction = process.env.NODE_ENV === 'production';
+        // ✅ HARD-CODE THE CORRECT CALLBACK
+        const redirect_uri = "https://startup.planittoday.click/api/auth/google/callback";
 
-        // Use the production URI (index 1) if in production,
-        // otherwise use the development URI (index 0)
-        const redirect_uri = isProduction ? redirect_uris[1] : redirect_uris[0];
+        console.log("Using Redirect URI:", redirect_uri);
 
-        console.log("Using Redirect URI:", redirect_uri); // For debugging
-        // === END OF FIX ===
-
-        const oAuth2Client = new google.auth.OAuth2(
+        return new google.auth.OAuth2(
             client_id,
             client_secret,
-            redirect_uri // Use our new dynamic variable
+            redirect_uri
         );
-        return oAuth2Client;
     } catch (err) {
         console.error('Error loading client secret file:', err);
         throw new Error('Could not load client secret file.');
     }
 }
+
 
 apiRouter.get('/auth/google', async (req, res) => {
     try {
