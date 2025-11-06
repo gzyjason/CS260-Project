@@ -6,6 +6,7 @@ const express = require('express');
 const { MongoClient } = require('mongodb'); // <-- Add MongoDB
 const uuid = require('uuid');
 const { google } = require('googleapis');
+const { OAuth2Client } = require('google-auth-library');
 const fs = require('fs').promises; // Used to read your client_secret.json
 
 const app = express();
@@ -167,7 +168,7 @@ apiRouter.get('/auth/google', async (req, res) => {
     }
 });
 
-apiRouter.get('/auth/google/callback', verifyAuth, async (req, res) => { // verifyAuth is included
+apiRouter.get('/auth/google/callback', async (req, res) => {
     const { code } = req.query;
 
     if (!code) {
@@ -177,18 +178,33 @@ apiRouter.get('/auth/google/callback', verifyAuth, async (req, res) => { // veri
     try {
         const oAuth2Client = await getOAuth2Client();
         const { tokens } = await oAuth2Client.getToken(code);
+        oAuth2Client.setCredentials(tokens); // Set credentials for the next call
 
         console.log('Received Google Tokens:', tokens);
 
-        if (tokens.refresh_token) {
-            const userEmail = req.user.email;
-            googleRefreshTokens[userEmail] = tokens.refresh_token;
-            console.log(`SUCCESS: Got a refresh_token for ${userEmail}. Save this to your database!`);
-        } else {
-            console.log('NOTE: No refresh_token received. User likely already authorized.');
+        // === NEW SECTION: Get Google User's Email ===
+        // Since we are not logged in, we must ask Google who this user is.
+        // We use the access_token we just received to do this.
+        const oauth2 = google.oauth2({ version: 'v2', auth: oAuth2Client });
+        const { data } = await oauth2.userinfo.get();
+        const userEmail = data.email;
+        // === END NEW SECTION ===
+
+        if (!userEmail) {
+            throw new Error("Could not retrieve user's email from Google.");
         }
 
-        res.redirect('/preferences'); // Redirect back to frontend
+        if (tokens.refresh_token) {
+            // Now we save the token using the email from Google
+            googleRefreshTokens[userEmail] = tokens.refresh_token;
+            console.log(`SUCCESS: Got a refresh_token for ${userEmail}.`);
+        } else {
+            console.log(`NOTE: No refresh_token received for ${userEmail}. User likely already authorized.`);
+        }
+
+        // Redirect back to the preferences page. The user will be able to
+        // use the "Sync" button as soon as they log in (since their email will match).
+        res.redirect('/preferences');
 
     } catch (err) {
         console.error('Error exchanging Google token:', err);
