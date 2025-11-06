@@ -121,7 +121,12 @@ apiRouter.delete('/auth/logout', async (req, res) => {
 // == START: Google Calendar API Endpoints
 // =================================================================
 
-const GOOGLE_SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
+const GOOGLE_SCOPES = [
+    'https://www.googleapis.com/auth/calendar.events',
+    'https://www.googleapis.com/auth/userinfo.email',
+    'https://www.googleapis.com/auth/userinfo.profile',
+    'openid'
+];
 const path = require('path');
 const CREDENTIALS_PATH = path.join(__dirname, 'client_secret.json');
  // Path to your downloaded file
