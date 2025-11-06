@@ -3,6 +3,7 @@ import { useAppContext } from '../hooks/useAppContext.js';
 
 const Header = () => {
     const { userName } = useAppContext();
+    const isLoggedIn = userName && userName !== 'Guest'; // Check if user is logged in
 
     return (
         <header className="flex flex-col bg-creamy-bg fixed top-0 left-0 w-full z-1000 pt-4 pb-4 px-4">
@@ -15,9 +16,16 @@ const Header = () => {
             </div>
             <nav className="mt-2">
                 <ul className="list-none p-0 flex justify-start space-x-4">
+                    {/* About is always visible */}
                     <li><Link to="/about" className="bg-[#FFA500] text-black px-3 py-1 rounded-md hover:opacity-90 transition duration-150 font-semibold">About</Link></li>
-                    <li><Link to="/calendar" className="bg-[#FFA500] text-black px-3 py-1 rounded-md hover:opacity-90 transition duration-150 font-semibold">Calendar</Link></li>
-                    <li><Link to="/preferences" className="bg-[#FFA500] text-black px-3 py-1 rounded-md hover:opacity-90 transition duration-150 font-semibold">Preferences</Link></li>
+
+                    {/* Only show Calendar and Preferences if logged in */}
+                    {isLoggedIn && (
+                        <>
+                            <li><Link to="/calendar" className="bg-[#FFA500] text-black px-3 py-1 rounded-md hover:opacity-90 transition duration-150 font-semibold">Calendar</Link></li>
+                            <li><Link to="/preferences" className="bg-[#FFA500] text-black px-3 py-1 rounded-md hover:opacity-90 transition duration-150 font-semibold">Preferences</Link></li>
+                        </>
+                    )}
                 </ul>
             </nav>
             <hr className="mt-4 border-t border-sepia-text/30" />
