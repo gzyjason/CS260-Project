@@ -1,3 +1,5 @@
+// planit/service/index.js
+
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const express = require('express');
@@ -9,38 +11,24 @@ const fs = require('fs').promises; // Used to read your client_secret.json
 const app = express();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
 
-
+// --- In-Memory "Databases" ---
 const authCookieName = 'token';
-
 let users = [];
 let events = {};
 let unavailableTimes = {};
 let googleRefreshTokens = {};
 
+// --- Middleware ---
 app.use(express.json());
 app.use(cookieParser());
-
-// Serve static files (your React build)
-app.use(express.static('public'));
+app.use(express.static('public')); // Serve static files
 
 // API router
-var apiRouter = express.Router();
+const apiRouter = express.Router();
 app.use(`/api`, apiRouter);
 
-// --- Add API Endpoints (see step 2) ---
-
-// Default error handler
-app.use(function (err, req, res, next) {
-    res.status(500).send({ type: err.name, message: err.message });
-});
-
-// Return frontend for unknown paths (for React Router)
-app.use((_req, res) => {
-    res.sendFile('index.html', { root: 'public' });
-});
-
 // =================================================================
-// == START: Missing Auth Helper Functions (from Simon)
+// == START: Auth Helper Functions
 // =================================================================
 
 async function findUser(field, value) {
@@ -61,40 +49,45 @@ async function createUser(email, password) {
     return user;
 }
 
-// setAuthCookie in the HTTP response
 function setAuthCookie(res, authToken) {
     res.cookie(authCookieName, authToken, {
         maxAge: 1000 * 60 * 60 * 24 * 365, // Stays logged in for one year
-        secure: false, // Set to true when on HTTPS
+        secure: false, // <-- THE FIX: Set to false for HTTP (localhost)
         httpOnly: true,
         sameSite: 'strict',
     });
 }
 
+const verifyAuth = async (req, res, next) => {
+    const user = await findUser('token', req.cookies[authCookieName]);
+    if (user) {
+        // Attach the user object to the request
+        req.user = user;
+        next();
+    } else {
+        res.status(401).send({ msg: 'Unauthorized' });
+    }
+};
+
 // =================================================================
-// == END: Missing Auth Helper Functions
+// == END: Auth Helper Functions
 // =================================================================
 
-// This line should already be at the very bottom of your file
-app.listen(port, () => {
-    console.log(`Listening on port ${port}`);
-});
-app.listen(port, () => {
-    console.log(`Listening on port ${port}`);
-});
+
+// =================================================================
+// == START: Standard Auth Endpoints
+// =================================================================
 
 apiRouter.post('/auth/create', async (req, res) => {
     if (await findUser('email', req.body.email)) {
         res.status(409).send({ msg: 'Existing user' });
     } else {
         const user = await createUser(req.body.email, req.body.password);
-
         setAuthCookie(res, user.token);
         res.send({ email: user.email });
     }
 });
 
-// GetAuth login an existing user
 apiRouter.post('/auth/login', async (req, res) => {
     const user = await findUser('email', req.body.email);
     if (user) {
@@ -108,7 +101,6 @@ apiRouter.post('/auth/login', async (req, res) => {
     res.status(401).send({ msg: 'Unauthorized' });
 });
 
-// DeleteAuth logout a user
 apiRouter.delete('/auth/logout', async (req, res) => {
     const user = await findUser('token', req.cookies[authCookieName]);
     if (user) {
@@ -118,42 +110,28 @@ apiRouter.delete('/auth/logout', async (req, res) => {
     res.status(204).end();
 });
 
-
-
-
-
-const verifyAuth = async (req, res, next) => {
-    const user = await findUser('token', req.cookies[authCookieName]);
-    if (user) {
-        // Attach the user object to the request
-        req.user = user;
-        next();
-    } else {
-        res.status(401).send({ msg: 'Unauthorized' });
-    }
-};
 // =================================================================
-// == START: Google Calendar API Endpoints (Part 2, Step 3)
+// == END: Standard Auth Endpoints
+// =================================================================
+
+
+// =================================================================
+// == START: Google Calendar API Endpoints
 // =================================================================
 
 const GOOGLE_SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
 const CREDENTIALS_PATH = 'client_secret.json'; // Path to your downloaded file
 
-/**
- * Creates a new OAuth2 client with the credentials from client_secret.json
- */
 async function getOAuth2Client() {
     try {
         const content = await fs.readFile(CREDENTIALS_PATH);
         const credentials = JSON.parse(content);
         const { client_secret, client_id, redirect_uris } = credentials.web;
 
-        // Make sure you use the correct redirect URI
-        // For local, this is http://localhost:4000/api/auth/google/callback
         const oAuth2Client = new google.auth.OAuth2(
             client_id,
             client_secret,
-            redirect_uris[0] // Assumes the first URI is your intended callback
+            redirect_uris[0] // Assumes the first URI (localhost) is correct
         );
         return oAuth2Client;
     } catch (err) {
@@ -162,55 +140,74 @@ async function getOAuth2Client() {
     }
 }
 
-/**
- * Endpoint 1: Redirects the user to Google's consent screen
- */
 apiRouter.get('/auth/google', async (req, res) => {
     try {
         const oAuth2Client = await getOAuth2Client();
-
         const authUrl = oAuth2Client.generateAuthUrl({
-            access_type: 'offline', // 'offline' is required to get a refresh_token
+            access_type: 'offline',
             scope: GOOGLE_SCOPES,
-            prompt: 'consent', // Forces the user to re-consent, which ensures you get a refresh_token
+            prompt: 'consent',
         });
-
         res.redirect(authUrl);
     } catch (err) {
         res.status(500).send({ msg: 'Error generating Google auth URL', error: err.message });
     }
 });
 
-apiRouter.post('/api/google/sync', verifyAuth, async (req, res) => {
-    const userEmail = req.user.email;
-    const { events: planItEvents } = req.body; // Get events from frontend
+apiRouter.get('/auth/google/callback', verifyAuth, async (req, res) => { // verifyAuth is included
+    const { code } = req.query;
 
-    // 1. Get the user's saved refresh_token
-    const refreshToken = googleRefreshTokens[userEmail];
-    if (!refreshToken) {
-        return res.status(400).send({ msg: 'User has not authorized Google Calendar. Please "Sync with Google" first.' });
+    if (!code) {
+        return res.status(400).send('Missing authorization code');
     }
 
     try {
-        // 2. Create an auth'd client using the refresh_token
+        const oAuth2Client = await getOAuth2Client();
+        const { tokens } = await oAuth2Client.getToken(code);
+
+        console.log('Received Google Tokens:', tokens);
+
+        if (tokens.refresh_token) {
+            const userEmail = req.user.email;
+            googleRefreshTokens[userEmail] = tokens.refresh_token;
+            console.log(`SUCCESS: Got a refresh_token for ${userEmail}. Save this to your database!`);
+        } else {
+            console.log('NOTE: No refresh_token received. User likely already authorized.');
+        }
+
+        res.redirect('/preferences'); // Redirect back to frontend
+
+    } catch (err) {
+        console.error('Error exchanging Google token:', err);
+        res.status(500).send({ msg: 'Error exchanging Google token', error: err.message });
+    }
+});
+
+apiRouter.post('/google/sync', verifyAuth, async (req, res) => {
+    const userEmail = req.user.email;
+    const { events: planItEvents } = req.body;
+
+    const refreshToken = googleRefreshTokens[userEmail];
+    if (!refreshToken) {
+        return res.status(400).send({ msg: 'User has not authorized Google Calendar. Please "1. Authorize with Google" first.' });
+    }
+
+    try {
         const oAuth2Client = await getOAuth2Client();
         oAuth2Client.setCredentials({
             refresh_token: refreshToken
         });
 
-        // 3. Initialize the Google Calendar API
         const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 
-        // 4. Loop through events from frontend and add them to Google
         let createdCount = 0;
         for (const event of planItEvents) {
-            // Format the event for Google Calendar
             const googleEvent = {
                 summary: event.title,
                 description: 'Scheduled by PlanIt!',
                 start: {
-                    dateTime: new Date(event.date).toISOString(), // Use full ISO string
-                    timeZone: 'America/Denver', // You can make this dynamic later
+                    dateTime: new Date(event.date).toISOString(),
+                    timeZone: 'America/Denver',
                 },
                 end: {
                     dateTime: new Date(new Date(event.date).getTime() + event.durationHours * 60 * 60 * 1000).toISOString(),
@@ -218,9 +215,8 @@ apiRouter.post('/api/google/sync', verifyAuth, async (req, res) => {
                 },
             };
 
-            // 5. Insert the event
             await calendar.events.insert({
-                calendarId: 'primary', // 'primary' means the user's main calendar
+                calendarId: 'primary',
                 resource: googleEvent,
             });
             createdCount++;
@@ -234,127 +230,65 @@ apiRouter.post('/api/google/sync', verifyAuth, async (req, res) => {
     }
 });
 
-apiRouter.get('/auth/google/callback', verifyAuth, async (req, res) => {
-    const { code } = req.query; // The authorization code from Google
-
-    if (!code) {
-        return res.status(400).send('Missing authorization code');
-    }
-
-    try {
-        const oAuth2Client = await getOAuth2Client();
-        const { tokens } = await oAuth2Client.getToken(code);
-
-        // IMPORTANT: tokens.refresh_token is what you must save!
-        // You only get a refresh_token the *first* time a user authorizes.
-        console.log('Received Google Tokens:', tokens);
-
-        if (tokens.refresh_token) {
-            const userEmail = req.user.email;
-            googleRefreshTokens[userEmail] = tokens.refresh_token;
-            console.log('SUCCESS: Got a refresh_token. Save this to your database!');
-        } else {
-            console.log('NOTE: No refresh_token received. User likely already authorized.');
-        }
-
-        res.redirect('/preferences');
-
-    } catch (err) {
-        console.error('Error exchanging Google token:', err);
-        res.status(500).send({ msg: 'Error exchanging Google token', error: err.message });
-    }
-});
-
 // =================================================================
 // == END: Google Calendar API Endpoints
 // =================================================================
 
-// GetEvents: Get all events for the logged-in user
+
+// =================================================================
+// == START: PlanIt Data Endpoints
+// =================================================================
+
 apiRouter.get('/events', verifyAuth, (req, res) => {
     const userEmail = req.user.email;
-    // Ensure the user has an event array initialized
     if (!events[userEmail]) {
         events[userEmail] = [];
     }
     res.send(events[userEmail]);
 });
 
-// CreateEvent: Add a new event for the logged-in user
 apiRouter.post('/events', verifyAuth, (req, res) => {
     const userEmail = req.user.email;
     const newEvent = req.body;
-
-    // Assign a server-side ID and owner
     newEvent.id = uuid.v4();
     newEvent.ownerEmail = userEmail;
 
-    // Ensure the user has an event array initialized
     if (!events[userEmail]) {
         events[userEmail] = [];
     }
-
     events[userEmail].push(newEvent);
-
-    // Send back the newly created event (with its ID)
     res.status(201).send(newEvent);
 });
 
-// === UNAVAILABLE TIMES ENDPOINTS ===
-
-// GetUnavailableTimes: Get all unavailable times for the logged-in user
 apiRouter.get('/unavailable', verifyAuth, (req, res) => {
     const userEmail = req.user.email;
-
-    // Initialize with default value if user has no times set
-    // This matches your AppProvider's initial state
     if (!unavailableTimes[userEmail]) {
         unavailableTimes[userEmail] = [
-            {
-                id: uuid.v4(),
-                day: 'mon',
-                startTime: '12:00',
-                endTime: '13:00',
-                ownerEmail: userEmail
-            }
+            { id: uuid.v4(), day: 'mon', startTime: '12:00', endTime: '13:00', ownerEmail: userEmail }
         ];
     }
-
     res.send(unavailableTimes[userEmail]);
 });
 
-// AddUnavailableTime: Add a new unavailable time block
 apiRouter.post('/unavailable', verifyAuth, (req, res) => {
     const userEmail = req.user.email;
     const newTime = req.body;
-
-    // Assign server-side ID and owner
     newTime.id = uuid.v4();
     newTime.ownerEmail = userEmail;
 
-    // Initialize if needed (same as GET)
     if (!unavailableTimes[userEmail]) {
         unavailableTimes[userEmail] = [
-            {
-                id: uuid.v4(),
-                day: 'mon',
-                startTime: '12:00',
-                endTime: '13:00',
-                ownerEmail: userEmail
-            }
+            { id: uuid.v4(), day: 'mon', startTime: '12:00', endTime: '13:00', ownerEmail: userEmail }
         ];
     }
-
     unavailableTimes[userEmail].push(newTime);
-
     res.status(201).send(newTime);
 });
 
-// DeleteUnavailableTime: Remove an unavailable time block
 apiRouter.delete('/unavailable/:id', verifyAuth, (req, res) => {
     const userEmail = req.user.email;
     const { id } = req.params;
 
-    // Ensure the user's array exists
     if (unavailableTimes[userEmail]) {
         const initialLength = unavailableTimes[userEmail].length;
         unavailableTimes[userEmail] = unavailableTimes[userEmail].filter(
@@ -362,26 +296,32 @@ apiRouter.delete('/unavailable/:id', verifyAuth, (req, res) => {
         );
 
         if (unavailableTimes[userEmail].length === initialLength) {
-            // Nothing was deleted (ID not found)
-            return res.status(404).send({ msg: 'Time block not found' });
+            return res.status(4404).send({ msg: 'Time block not found' });
         }
     }
-
-    // Send "No Content" success status
     res.status(204).end();
 });
 
+// =================================================================
+// == END: PlanIt Data Endpoints
+// =================================================================
 
-async function findUser(field, value) {
-    if (!value) return null;
 
-    return users.find((u) => u[field] === value);
-}
-function setAuthCookie(res, authToken) {
-    res.cookie(authCookieName, authToken, {
-        maxAge: 1000 * 60 * 60 * 24 * 365,
-        secure: true,
-        httpOnly: true,
-        sameSite: 'strict',
-    });
-}
+// =================================================================
+// == START: Server Fallback and Listen
+// =================================================================
+
+// Default error handler
+app.use(function (err, req, res, next) {
+    res.status(500).send({ type: err.name, message: err.message });
+});
+
+// Return frontend for unknown paths (for React Router)
+app.use((_req, res) => {
+    res.sendFile('index.html', { root: 'public' });
+});
+
+// Start the server
+app.listen(port, () => {
+    console.log(`Listening on port ${port}`);
+});
