@@ -76,12 +76,9 @@ apiRouter.delete('/auth/logout', async (req, res) => {
 
 let events = {};
 let unavailableTimes = {};
+let googleRefreshTokens = {};
 
-/**
- * Middleware to verify that the user is authorized.
- * This is a modified version of the Simon example's verifyAuth.
- * It attaches the user object to the request for easier access in endpoints.
- */
+
 const verifyAuth = async (req, res, next) => {
     const user = await findUser('token', req.cookies[authCookieName]);
     if (user) {
