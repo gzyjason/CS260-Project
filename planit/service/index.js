@@ -122,16 +122,28 @@ apiRouter.delete('/auth/logout', async (req, res) => {
 const GOOGLE_SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
 const CREDENTIALS_PATH = 'client_secret.json'; // Path to your downloaded file
 
+// ... (this function is in planit/service/index.js)
 async function getOAuth2Client() {
     try {
         const content = await fs.readFile(CREDENTIALS_PATH);
         const credentials = JSON.parse(content);
         const { client_secret, client_id, redirect_uris } = credentials.web;
 
+        // === THIS IS THE FIX ===
+        // Check if we are in production
+        const isProduction = process.env.NODE_ENV === 'production';
+
+        // Use the production URI (index 1) if in production,
+        // otherwise use the development URI (index 0)
+        const redirect_uri = isProduction ? redirect_uris[1] : redirect_uris[0];
+
+        console.log("Using Redirect URI:", redirect_uri); // For debugging
+        // === END OF FIX ===
+
         const oAuth2Client = new google.auth.OAuth2(
             client_id,
             client_secret,
-            redirect_uris[0] // Assumes the first URI (localhost) is correct
+            redirect_uri // Use our new dynamic variable
         );
         return oAuth2Client;
     } catch (err) {

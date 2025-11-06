@@ -42,7 +42,7 @@ ssh -i "$key" ubuntu@$hostname << ENDSSH
 bash -i
 cd services/${service}
 npm install
-pm2 restart ${service}
+NODE_ENV=production pm2 restart ${service}
 ENDSSH
 
 # Step 5
