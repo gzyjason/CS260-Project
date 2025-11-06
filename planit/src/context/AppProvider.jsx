@@ -1,5 +1,3 @@
-// planit/src/context/AppProvider.jsx
-
 import { useState, useEffect } from 'react';
 import { AppContext } from './AppContext.js';
 import { useNavigate } from 'react-router-dom'; // Import useNavigate for logout

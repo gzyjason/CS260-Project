@@ -1,5 +1,3 @@
-// planit/src/pages/Login.jsx
-
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 // We no longer import useAppContext here, as login is handled by the server.
