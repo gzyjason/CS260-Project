@@ -12,6 +12,11 @@ const port = process.argv.length > 2 ? process.argv[2] : 4000;
 
 const authCookieName = 'token';
 
+let users = [];
+let events = {};
+let unavailableTimes = {};
+let googleRefreshTokens = {};
+
 app.use(express.json());
 app.use(cookieParser());
 
@@ -34,6 +39,46 @@ app.use((_req, res) => {
     res.sendFile('index.html', { root: 'public' });
 });
 
+// =================================================================
+// == START: Missing Auth Helper Functions (from Simon)
+// =================================================================
+
+async function findUser(field, value) {
+    if (!value) return null;
+    // NOTE: This will be replaced with a database call
+    return users.find((u) => u[field] === value);
+}
+
+async function createUser(email, password) {
+    const passwordHash = await bcrypt.hash(password, 10);
+    const user = {
+        email: email,
+        password: passwordHash,
+        token: uuid.v4(),
+    };
+    // NOTE: This will be replaced with a database call
+    users.push(user);
+    return user;
+}
+
+// setAuthCookie in the HTTP response
+function setAuthCookie(res, authToken) {
+    res.cookie(authCookieName, authToken, {
+        maxAge: 1000 * 60 * 60 * 24 * 365, // Stays logged in for one year
+        secure: false, // Set to true when on HTTPS
+        httpOnly: true,
+        sameSite: 'strict',
+    });
+}
+
+// =================================================================
+// == END: Missing Auth Helper Functions
+// =================================================================
+
+// This line should already be at the very bottom of your file
+app.listen(port, () => {
+    console.log(`Listening on port ${port}`);
+});
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
@@ -74,9 +119,7 @@ apiRouter.delete('/auth/logout', async (req, res) => {
 });
 
 
-let events = {};
-let unavailableTimes = {};
-let googleRefreshTokens = {};
+
 
 
 const verifyAuth = async (req, res, next) => {
