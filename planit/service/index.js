@@ -55,7 +55,7 @@ function setAuthCookie(res, authToken) {
         maxAge: 1000 * 60 * 60 * 24 * 365, // Stays logged in for one year
         secure: isProduction, // <-- NOW SECURE IN PRODUCTION
         httpOnly: true,
-        sameSite: 'strict',
+        sameSite: 'lax',
     });
 }
 

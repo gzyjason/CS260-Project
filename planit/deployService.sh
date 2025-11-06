@@ -42,8 +42,8 @@ ssh -i "$key" ubuntu@$hostname << ENDSSH
 bash -i
 cd services/${service}
 npm install
-NODE_ENV=production pm2 restart ${service}
-ENDSSH
+pm2 delete ${service} || true
+NODE_ENV=production pm2 start index.js --name ${service}ENDSSH
 
 # Step 5
 printf "\n----> Removing local copy of the distribution package\n"
