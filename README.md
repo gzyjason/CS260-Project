@@ -67,16 +67,24 @@ For this deliverable I did the following. I checked the box [x] and added a desc
 - [x] **Bundled using Vite** - Easy to install and use Vite.
 - [x] **Components** - Brought the code over from HTML and CSS.
 - [x] **Tailwind Implementation** - Due to recent updates to Tailwind, React can no longer be directly used to implement it. Craco was used as a workaround as I want to use the newest version of Tailwind.
-- [x] **Routing** Added the component and page routing.
-- [x] **Redos** Redid many styling elements that were somehow lost when converting from CSS to React.
+- [x] **Routing** - Added the component and page routing.
+- [x] **Redos** - Redid many styling elements that were somehow lost when converting from CSS to React.
 
 ## 🚀 React part 2: Reactivity
 
-- [x] **React Context API** Implemented React Context API to manage shared application state (user name, events, unavailable times).
-- [x] **ESLint** Refactored context implementation into a standard 3-file structure to comply with ESLint
-- [x] **Functionality** Added functionality to event adding and preference setting; added mocked functionality for other functions. 
+- [x] **React Context API** - Implemented React Context API to manage shared application state (user name, events, unavailable times).
+- [x] **ESLint** - Refactored context implementation into a standard 3-file structure to comply with ESLint
+- [x] **Functionality** - Added functionality to event adding and preference setting; added mocked functionality for other functions. 
 
 ## 🚀 Service
 
 **Note for Graders:** To test the Google Calendar (third-party API) integration, please go to the "Preferences" page and click "Sync with Google." You will see a "Google hasn't verified this app" warning. This is expected. Please click "Advanced" and then "Go to planittoday.click (unsafe)" to proceed with the test. I have put all available Gmails for TAs and Professors that I could find as test users.
 
+For this deliverable I did the following. I checked the box [x] and added a description for things I completed.
+
+- [x] **Node.js/Express HTTP service** - Created a backend service in planit/service/index.js using Node.js and Express to provide API endpoints.
+- [x] **Frontend served by Express** - The service is configured to serve the static frontend files (the React dist build) using express.static('public'). The deployService.sh script was updated to place the React build in this public directory.
+- [x] **Frontend calls third party service** - Implemented Google Calendar as a third-party API. The frontend now has a "Sync with Google" flow, and the backend handles the OAuth 2.0 flow and event syncing.
+- [x] **Backend provides service endpoints** - Added backend endpoints to manage all application data.
+- [x] **Frontend calls service endpoints** - Refactored the entire React application to be driven by the backend API.
+- [x] **Supports registration, login, logout, and restricted endpoint** - Implemented a full authentication system using cookies.
