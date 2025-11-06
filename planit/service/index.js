@@ -50,9 +50,10 @@ async function createUser(email, password) {
 }
 
 function setAuthCookie(res, authToken) {
+    const isProduction = process.env.NODE_ENV === 'production';
     res.cookie(authCookieName, authToken, {
         maxAge: 1000 * 60 * 60 * 24 * 365, // Stays logged in for one year
-        secure: false, // <-- THE FIX: Set to false for HTTP (localhost)
+        secure: isProduction, // <-- NOW SECURE IN PRODUCTION
         httpOnly: true,
         sameSite: 'strict',
     });
