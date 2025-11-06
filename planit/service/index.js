@@ -122,7 +122,9 @@ apiRouter.delete('/auth/logout', async (req, res) => {
 // =================================================================
 
 const GOOGLE_SCOPES = ['https://www.googleapis.com/auth/calendar.events'];
-const CREDENTIALS_PATH = 'client_secret.json'; // Path to your downloaded file
+const path = require('path');
+const CREDENTIALS_PATH = path.join(__dirname, 'client_secret.json');
+ // Path to your downloaded file
 
 // ... (this function is in planit/service/index.js)
 async function getOAuth2Client() {
