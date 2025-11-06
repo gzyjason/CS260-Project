@@ -155,25 +155,13 @@ apiRouter.get('/auth/google/callback', verifyAuth, async (req, res) => {
         console.log('Received Google Tokens:', tokens);
 
         if (tokens.refresh_token) {
-            //
-            // === TODO: SAVE THE REFRESH TOKEN TO YOUR DATABASE ===
-            //
-            // const userEmail = req.user.email;
-            // await db.collection('users').updateOne(
-            //   { email: userEmail },
-            //   { $set: { googleRefreshToken: tokens.refresh_token } }
-            // );
-            //
+            const userEmail = req.user.email;
+            googleRefreshTokens[userEmail] = tokens.refresh_token;
             console.log('SUCCESS: Got a refresh_token. Save this to your database!');
         } else {
             console.log('NOTE: No refresh_token received. User likely already authorized.');
         }
 
-        // For now, just store the access_token in the session (or in memory)
-        // In a real app, you'd save the refresh_token and use it later.
-        oAuth2Client.setCredentials(tokens);
-
-        // Redirect the user back to your frontend preferences page
         res.redirect('/preferences');
 
     } catch (err) {
