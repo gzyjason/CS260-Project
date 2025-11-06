@@ -1,6 +1,9 @@
 import { useState } from 'react';
 import { useAppContext } from '../hooks/useAppContext.js';
 
+// --- This utility logic (isSlotAvailable, findNextAvailableSlot) ---
+// --- can stay exactly as it was. It's frontend-only logic. ---
+//
 const isSlotAvailable = (newAppt, existingAppointments, unavailableTimes, dayNames) => {
     const newStart = newAppt.date.getTime();
     const newEnd = newStart + newAppt.durationHours * 60 * 60 * 1000;
@@ -85,9 +88,12 @@ const findNextAvailableSlot = (duration, existingAppointments, unavailableTimes)
     console.log("No slot found within 30 days.");
     return null;
 };
+// --- End of utility logic ---
+
 
 const AddEventModal = ({ isOpen, onClose }) => {
-    const { events, setEvents, unavailableTimes } = useAppContext();
+    // 1. Get functions from context. We no longer need setEvents
+    const { events, addEvent, unavailableTimes } = useAppContext();
     const [title, setTitle] = useState('');
     const [duration, setDuration] = useState(1);
 
@@ -102,14 +108,17 @@ const AddEventModal = ({ isOpen, onClose }) => {
         const foundDate = findNextAvailableSlot(duration, events, unavailableTimes);
 
         if (foundDate) {
+            // 2. Create the new event object (without an ID)
             const newEvent = {
-                id: Date.now() + Math.random(),
+                // The server will assign the ID
                 title: title.trim(),
                 date: foundDate,
                 durationHours: duration
             };
 
-            setEvents([...events, newEvent]);
+            // 3. Call the addEvent function from context
+            addEvent(newEvent);
+
             alert(`Task "${title.trim()}" scheduled successfully! \nOn: ${foundDate.toLocaleString()}`);
             onClose();
 
