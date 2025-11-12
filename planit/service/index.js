@@ -1,5 +1,3 @@
-// planit/service/index.js
-
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const express = require('express');

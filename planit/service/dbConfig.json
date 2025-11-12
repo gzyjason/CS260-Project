@@ -1,4 +1,5 @@
 {
-  "MONGODB_URI": "mongodb+srv://gzyjason:<db_password>@planit.adfli4k.mongodb.net/?appName=PlanIt",
-  "DB_NAME": "PlanItDB"
+  "userName": "gzyjason",
+  "password": "021126gao",
+  "hostname": "planit.adfli4k.mongodb.net"
 }
