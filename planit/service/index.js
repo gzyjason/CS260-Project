@@ -1,5 +1,3 @@
-// planit/service/index.js
-
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const express = require('express');
@@ -7,10 +5,43 @@ const { MongoClient } = require('mongodb'); // <-- Add MongoDB
 const uuid = require('uuid');
 const { google } = require('googleapis');
 const { OAuth2Client } = require('google-auth-library');
-const fs = require('fs').promises; // Used to read your client_secret.json
+const fs = require('fs').promises;
+const path = require('path');
+
 
 const app = express();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
+
+const DB_CONFIG_PATH = path.join(__dirname, 'dbConfig.json');
+let db = null;
+
+async function connectToDb() {
+    if (db) return db;
+
+    // 1. Read and parse the config file
+    let config;
+    try {
+        const content = await fs.readFile(DB_CONFIG_PATH, 'utf8');
+        config = JSON.parse(content);
+    } catch (err) {
+        console.error('Error loading database config file:', err.message);
+        throw new Error('Could not load database configuration.');
+    }
+
+    const { MONGODB_URI, DB_NAME } = config; // Destructure connection details
+
+    // 2. Connect to MongoDB
+    try {
+        const client = new MongoClient(MONGODB_URI);
+        await client.connect();
+        db = client.db(DB_NAME);
+        console.log('Successfully connected to MongoDB Atlas.');
+        return db;
+    } catch (ex) {
+        console.error('Failed to connect to MongoDB Atlas:', ex);
+        throw ex;
+    }
+}
 
 // --- In-Memory "Databases" ---
 const authCookieName = 'token';
@@ -18,6 +49,11 @@ let users = [];
 let events = {};
 let unavailableTimes = {};
 let googleRefreshTokens = {};
+
+let db = null;
+
+
+
 
 // --- Middleware ---
 app.use(express.json());
