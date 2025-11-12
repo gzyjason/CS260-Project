@@ -5,27 +5,35 @@ const { MongoClient } = require('mongodb'); // <-- Add MongoDB
 const uuid = require('uuid');
 const { google } = require('googleapis');
 const { OAuth2Client } = require('google-auth-library');
-const fs = require('fs').promises;
-const path = require('path');
-
+const fs = require('fs').promises; // Used to read your client_secret.json
+const path = require('path'); // Added path module for config file resolution
 
 const app = express();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
 
-const DB_CONFIG_PATH = path.join(__dirname, 'dbConfig.json');
-let db = null;
 
+// =================================================================
+// == START: MongoDB/Config Setup
+// =================================================================
+
+const DB_CONFIG_PATH = path.join(__dirname, 'dbConfig.json');
+let db = null; // Variable to hold the cached DB connection instance
+
+/**
+ * Establishes a single connection to MongoDB Atlas and caches the DB instance.
+ * @returns {Promise<import('mongodb').Db>} The MongoDB database instance.
+ */
 async function connectToDb() {
     if (db) return db;
 
-    // 1. Read and parse the config file
+    // 1. Read and parse the config file to get the connection string
     let config;
     try {
         const content = await fs.readFile(DB_CONFIG_PATH, 'utf8');
         config = JSON.parse(content);
     } catch (err) {
         console.error('Error loading database config file:', err.message);
-        throw new Error('Could not load database configuration.');
+        throw new Error('Could not load database configuration. Check dbConfig.json exists.');
     }
 
     const { MONGODB_URI, DB_NAME } = config; // Destructure connection details
@@ -43,17 +51,17 @@ async function connectToDb() {
     }
 }
 
-// --- In-Memory "Databases" ---
+// =================================================================
+// == END: MongoDB/Config Setup
+// =================================================================
+
+
+// --- In-Memory "Databases" (Temporary: These should be replaced by MongoDB calls) ---
 const authCookieName = 'token';
 let users = [];
 let events = {};
 let unavailableTimes = {};
 let googleRefreshTokens = {};
-
-let db = null;
-
-
-
 
 // --- Middleware ---
 app.use(express.json());
@@ -70,7 +78,12 @@ app.use(`/api`, apiRouter);
 
 async function findUser(field, value) {
     if (!value) return null;
-    // NOTE: This will be replaced with a database call
+
+    // NOTE: To fully implement MongoDB, uncomment the lines below and remove the temporary line:
+    // const database = await connectToDb();
+    // return database.collection('users').findOne({ [field]: value });
+
+    // TEMPORARY: Using in-memory array as originally implemented:
     return users.find((u) => u[field] === value);
 }
 
@@ -81,7 +94,12 @@ async function createUser(email, password) {
         password: passwordHash,
         token: uuid.v4(),
     };
-    // NOTE: This will be replaced with a database call
+
+    // NOTE: To fully implement MongoDB, uncomment the lines below and remove the temporary line:
+    // const database = await connectToDb();
+    // await database.collection('users').insertOne(user);
+
+    // TEMPORARY: Using in-memory array as originally implemented:
     users.push(user);
     return user;
 }
@@ -163,9 +181,8 @@ const GOOGLE_SCOPES = [
     'https://www.googleapis.com/auth/userinfo.profile',
     'openid'
 ];
-const path = require('path');
 const CREDENTIALS_PATH = path.join(__dirname, 'client_secret.json');
- // Path to your downloaded file
+// Path to your downloaded file
 
 // ... (this function is in planit/service/index.js)
 async function getOAuth2Client() {
@@ -307,6 +324,7 @@ apiRouter.post('/google/sync', verifyAuth, async (req, res) => {
 
 apiRouter.get('/events', verifyAuth, (req, res) => {
     const userEmail = req.user.email;
+    // NOTE: This logic needs to be replaced by a MongoDB query.
     if (!events[userEmail]) {
         events[userEmail] = [];
     }
@@ -319,6 +337,7 @@ apiRouter.post('/events', verifyAuth, (req, res) => {
     newEvent.id = uuid.v4();
     newEvent.ownerEmail = userEmail;
 
+    // NOTE: This logic needs to be replaced by a MongoDB insert.
     if (!events[userEmail]) {
         events[userEmail] = [];
     }
@@ -328,6 +347,7 @@ apiRouter.post('/events', verifyAuth, (req, res) => {
 
 apiRouter.get('/unavailable', verifyAuth, (req, res) => {
     const userEmail = req.user.email;
+    // NOTE: This logic needs to be replaced by a MongoDB query.
     if (!unavailableTimes[userEmail]) {
         unavailableTimes[userEmail] = [
             { id: uuid.v4(), day: 'mon', startTime: '12:00', endTime: '13:00', ownerEmail: userEmail }
@@ -342,6 +362,7 @@ apiRouter.post('/unavailable', verifyAuth, (req, res) => {
     newTime.id = uuid.v4();
     newTime.ownerEmail = userEmail;
 
+    // NOTE: This logic needs to be replaced by a MongoDB insert.
     if (!unavailableTimes[userEmail]) {
         unavailableTimes[userEmail] = [
             { id: uuid.v4(), day: 'mon', startTime: '12:00', endTime: '13:00', ownerEmail: userEmail }
@@ -355,6 +376,7 @@ apiRouter.delete('/unavailable/:id', verifyAuth, (req, res) => {
     const userEmail = req.user.email;
     const { id } = req.params;
 
+    // NOTE: This logic needs to be replaced by a MongoDB delete.
     if (unavailableTimes[userEmail]) {
         const initialLength = unavailableTimes[userEmail].length;
         unavailableTimes[userEmail] = unavailableTimes[userEmail].filter(
@@ -388,6 +410,8 @@ app.use((_req, res) => {
 });
 
 // Start the server
+// NOTE: Ideally, you should call connectToDb() here,
+// wait for it to resolve, and then start listening.
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
