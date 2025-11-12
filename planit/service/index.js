@@ -1,66 +1,21 @@
+// planit/service/index.js
+
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const express = require('express');
-const { MongoClient } = require('mongodb'); // <-- Add MongoDB
 const uuid = require('uuid');
 const { google } = require('googleapis');
 const { OAuth2Client } = require('google-auth-library');
-const fs = require('fs').promises; // Used to read your client_secret.json
-const path = require('path'); // Added path module for config file resolution
+const fs = require('fs').promises;
+const path = require('path');
+const DB = require('./database.js'); // <<< IMPORT DATABASE MODULE
 
 const app = express();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
 
-
-// =================================================================
-// == START: MongoDB/Config Setup
-// =================================================================
-
-const DB_CONFIG_PATH = path.join(__dirname, 'dbConfig.json');
-let db = null; // Variable to hold the cached DB connection instance
-
-/**
- * Establishes a single connection to MongoDB Atlas and caches the DB instance.
- * @returns {Promise<import('mongodb').Db>} The MongoDB database instance.
- */
-async function connectToDb() {
-    if (db) return db;
-
-    // 1. Read and parse the config file to get the connection string
-    let config;
-    try {
-        const content = await fs.readFile(DB_CONFIG_PATH, 'utf8');
-        config = JSON.parse(content);
-    } catch (err) {
-        console.error('Error loading database config file:', err.message);
-        throw new Error('Could not load database configuration. Check dbConfig.json exists.');
-    }
-
-    const { MONGODB_URI, DB_NAME } = config; // Destructure connection details
-
-    // 2. Connect to MongoDB
-    try {
-        const client = new MongoClient(MONGODB_URI);
-        await client.connect();
-        db = client.db(DB_NAME);
-        console.log('Successfully connected to MongoDB Atlas.');
-        return db;
-    } catch (ex) {
-        console.error('Failed to connect to MongoDB Atlas:', ex);
-        throw ex;
-    }
-}
-
-// =================================================================
-// == END: MongoDB/Config Setup
-// =================================================================
-
-
-// --- In-Memory "Databases" (Temporary: These should be replaced by MongoDB calls) ---
+// --- Database related memory ---
 const authCookieName = 'token';
-let users = [];
-let events = {};
-let unavailableTimes = {};
+// Keeping Google refresh tokens in memory as volatile session data
 let googleRefreshTokens = {};
 
 // --- Middleware ---
@@ -78,13 +33,10 @@ app.use(`/api`, apiRouter);
 
 async function findUser(field, value) {
     if (!value) return null;
-
-    // NOTE: To fully implement MongoDB, uncomment the lines below and remove the temporary line:
-    // const database = await connectToDb();
-    // return database.collection('users').findOne({ [field]: value });
-
-    // TEMPORARY: Using in-memory array as originally implemented:
-    return users.find((u) => u[field] === value);
+    if (field === 'token') {
+        return DB.getUserByToken(value);
+    }
+    return DB.getUser(value); // Assumes 'email' is the field for getUser
 }
 
 async function createUser(email, password) {
@@ -94,13 +46,7 @@ async function createUser(email, password) {
         password: passwordHash,
         token: uuid.v4(),
     };
-
-    // NOTE: To fully implement MongoDB, uncomment the lines below and remove the temporary line:
-    // const database = await connectToDb();
-    // await database.collection('users').insertOne(user);
-
-    // TEMPORARY: Using in-memory array as originally implemented:
-    users.push(user);
+    await DB.addUser(user);
     return user;
 }
 
@@ -108,13 +54,14 @@ function setAuthCookie(res, authToken) {
     const isProduction = process.env.NODE_ENV === 'production';
     res.cookie(authCookieName, authToken, {
         maxAge: 1000 * 60 * 60 * 24 * 365, // Stays logged in for one year
-        secure: isProduction, // <-- NOW SECURE IN PRODUCTION
+        secure: isProduction, // NOW SECURE IN PRODUCTION
         httpOnly: true,
         sameSite: 'lax',
     });
 }
 
 const verifyAuth = async (req, res, next) => {
+    // Find user by token in cookie
     const user = await findUser('token', req.cookies[authCookieName]);
     if (user) {
         // Attach the user object to the request
@@ -149,6 +96,7 @@ apiRouter.post('/auth/login', async (req, res) => {
     if (user) {
         if (await bcrypt.compare(req.body.password, user.password)) {
             user.token = uuid.v4();
+            await DB.updateUser(user); // Update token in DB
             setAuthCookie(res, user.token);
             res.send({ email: user.email });
             return;
@@ -161,6 +109,7 @@ apiRouter.delete('/auth/logout', async (req, res) => {
     const user = await findUser('token', req.cookies[authCookieName]);
     if (user) {
         delete user.token;
+        await DB.updateUser(user); // Clear token in DB
     }
     res.clearCookie(authCookieName);
     res.status(204).end();
@@ -182,18 +131,14 @@ const GOOGLE_SCOPES = [
     'openid'
 ];
 const CREDENTIALS_PATH = path.join(__dirname, 'client_secret.json');
-// Path to your downloaded file
 
-// ... (this function is in planit/service/index.js)
 async function getOAuth2Client() {
     try {
         const content = await fs.readFile(CREDENTIALS_PATH);
         const credentials = JSON.parse(content);
         const { client_secret, client_id } = credentials.web;
 
-        // ✅ HARD-CODE THE CORRECT CALLBACK
         const redirect_uri = "https://startup.planittoday.click/api/auth/google/callback";
-
         console.log("Using Redirect URI:", redirect_uri);
 
         return new google.auth.OAuth2(
@@ -232,32 +177,24 @@ apiRouter.get('/auth/google/callback', async (req, res) => {
     try {
         const oAuth2Client = await getOAuth2Client();
         const { tokens } = await oAuth2Client.getToken(code);
-        oAuth2Client.setCredentials(tokens); // Set credentials for the next call
+        oAuth2Client.setCredentials(tokens);
 
-        console.log('Received Google Tokens:', tokens);
-
-        // === NEW SECTION: Get Google User's Email ===
-        // Since we are not logged in, we must ask Google who this user is.
-        // We use the access_token we just received to do this.
         const oauth2 = google.oauth2({ version: 'v2', auth: oAuth2Client });
         const { data } = await oauth2.userinfo.get();
         const userEmail = data.email;
-        // === END NEW SECTION ===
 
         if (!userEmail) {
             throw new Error("Could not retrieve user's email from Google.");
         }
 
         if (tokens.refresh_token) {
-            // Now we save the token using the email from Google
+            // Save the token to the in-memory object
             googleRefreshTokens[userEmail] = tokens.refresh_token;
             console.log(`SUCCESS: Got a refresh_token for ${userEmail}.`);
         } else {
             console.log(`NOTE: No refresh_token received for ${userEmail}. User likely already authorized.`);
         }
 
-        // Redirect back to the preferences page. The user will be able to
-        // use the "Sync" button as soon as they log in (since their email will match).
         res.redirect('/preferences');
 
     } catch (err) {
@@ -319,73 +256,69 @@ apiRouter.post('/google/sync', verifyAuth, async (req, res) => {
 
 
 // =================================================================
-// == START: PlanIt Data Endpoints
+// == START: PlanIt Data Endpoints (Using DB functions)
 // =================================================================
 
-apiRouter.get('/events', verifyAuth, (req, res) => {
+// Helper to add default unavailable time if none exists for the user
+async function ensureDefaultUnavailableTime(userEmail) {
+    const defaultTime = {
+        id: uuid.v4(),
+        day: 'mon',
+        startTime: '12:00',
+        endTime: '13:00',
+        ownerEmail: userEmail
+    };
+    await DB.addUnavailableTime(defaultTime);
+    return [defaultTime];
+}
+
+
+apiRouter.get('/events', verifyAuth, async (req, res) => {
     const userEmail = req.user.email;
-    // NOTE: This logic needs to be replaced by a MongoDB query.
-    if (!events[userEmail]) {
-        events[userEmail] = [];
-    }
-    res.send(events[userEmail]);
+    const events = await DB.getEvents(userEmail);
+    res.send(events);
 });
 
-apiRouter.post('/events', verifyAuth, (req, res) => {
+apiRouter.post('/events', verifyAuth, async (req, res) => {
     const userEmail = req.user.email;
     const newEvent = req.body;
     newEvent.id = uuid.v4();
     newEvent.ownerEmail = userEmail;
 
-    // NOTE: This logic needs to be replaced by a MongoDB insert.
-    if (!events[userEmail]) {
-        events[userEmail] = [];
-    }
-    events[userEmail].push(newEvent);
-    res.status(201).send(newEvent);
+    const createdEvent = await DB.addEvent(newEvent);
+    res.status(201).send(createdEvent);
 });
 
-apiRouter.get('/unavailable', verifyAuth, (req, res) => {
+apiRouter.get('/unavailable', verifyAuth, async (req, res) => {
     const userEmail = req.user.email;
-    // NOTE: This logic needs to be replaced by a MongoDB query.
-    if (!unavailableTimes[userEmail]) {
-        unavailableTimes[userEmail] = [
-            { id: uuid.v4(), day: 'mon', startTime: '12:00', endTime: '13:00', ownerEmail: userEmail }
-        ];
+    let unavailableTimes = await DB.getUnavailableTimes(userEmail);
+
+    // Check if the array is empty and add a default one, as per original logic
+    if (unavailableTimes.length === 0) {
+        unavailableTimes = await ensureDefaultUnavailableTime(userEmail);
     }
-    res.send(unavailableTimes[userEmail]);
+
+    res.send(unavailableTimes);
 });
 
-apiRouter.post('/unavailable', verifyAuth, (req, res) => {
+apiRouter.post('/unavailable', verifyAuth, async (req, res) => {
     const userEmail = req.user.email;
     const newTime = req.body;
     newTime.id = uuid.v4();
     newTime.ownerEmail = userEmail;
 
-    // NOTE: This logic needs to be replaced by a MongoDB insert.
-    if (!unavailableTimes[userEmail]) {
-        unavailableTimes[userEmail] = [
-            { id: uuid.v4(), day: 'mon', startTime: '12:00', endTime: '13:00', ownerEmail: userEmail }
-        ];
-    }
-    unavailableTimes[userEmail].push(newTime);
-    res.status(201).send(newTime);
+    const createdTime = await DB.addUnavailableTime(newTime);
+    res.status(201).send(createdTime);
 });
 
-apiRouter.delete('/unavailable/:id', verifyAuth, (req, res) => {
+apiRouter.delete('/unavailable/:id', verifyAuth, async (req, res) => {
     const userEmail = req.user.email;
     const { id } = req.params;
 
-    // NOTE: This logic needs to be replaced by a MongoDB delete.
-    if (unavailableTimes[userEmail]) {
-        const initialLength = unavailableTimes[userEmail].length;
-        unavailableTimes[userEmail] = unavailableTimes[userEmail].filter(
-            (time) => time.id !== id
-        );
+    const deletedCount = await DB.removeUnavailableTime(userEmail, id);
 
-        if (unavailableTimes[userEmail].length === initialLength) {
-            return res.status(4404).send({ msg: 'Time block not found' });
-        }
+    if (deletedCount === 0) {
+        return res.status(404).send({ msg: 'Time block not found' });
     }
     res.status(204).end();
 });
@@ -410,8 +343,6 @@ app.use((_req, res) => {
 });
 
 // Start the server
-// NOTE: Ideally, you should call connectToDb() here,
-// wait for it to resolve, and then start listening.
 app.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
