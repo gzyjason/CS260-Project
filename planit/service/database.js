@@ -25,11 +25,20 @@ async function connectToDb() {
         throw new Error('Could not load database configuration.');
     }
 
-    const { MONGODB_URI, DB_NAME } = config;
+    // Destructure all necessary parts from the config
+    const { userName, password, hostname, DB_NAME } = config;
+
+    if (!userName || !password || !hostname || !DB_NAME) {
+        throw new Error('Database config file is missing required fields (userName, password, hostname, DB_NAME).');
+    }
+
+    // Construct the MONGODB_URI from the config parts
+    const MONGODB_URI = `mongodb+srv://${userName}:${password}@${hostname}/?retryWrites=true&w=majority`;
 
     try {
         const client = new MongoClient(MONGODB_URI);
         await client.connect();
+        // Use the DB_NAME from the config to get the database instance
         db = client.db(DB_NAME);
         console.log('Successfully connected to MongoDB Atlas.');
         return db;
