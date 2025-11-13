@@ -13,8 +13,8 @@ const port = process.argv.length > 2 ? process.argv[2] : 4000;
 
 // --- Database related memory ---
 const authCookieName = 'token';
-// Keeping Google refresh tokens in memory as volatile session data
-let googleRefreshTokens = {};
+// We no longer need the in-memory object for Google tokens.
+// let googleRefreshTokens = {}; // <<< REMOVED
 
 // --- Middleware ---
 app.use(express.json());
@@ -43,6 +43,7 @@ async function createUser(email, password) {
         email: email,
         password: passwordHash,
         token: uuid.v4(),
+        googleRefreshToken: null, // Add new field for Google token
     };
     await DB.addUser(user);
     return user;
@@ -201,9 +202,18 @@ apiRouter.get('/auth/google/callback', async (req, res) => {
         }
 
         if (tokens.refresh_token) {
-            // Save the token to the in-memory object
-            googleRefreshTokens[userEmail] = tokens.refresh_token;
-            console.log(`SUCCESS: Got a refresh_token for ${userEmail}.`);
+            // Find the user in our database
+            const user = await DB.getUser(userEmail);
+            if (user) {
+                // Save the token to their database document
+                user.googleRefreshToken = tokens.refresh_token;
+                await DB.updateUser(user);
+                console.log(`SUCCESS: Saved refresh_token to DB for ${userEmail}.`);
+            } else {
+                // User authorized Google but doesn't have an account in our system.
+                // This is fine, we just can't save their token.
+                console.log(`NOTE: User ${userEmail} authorized Google but does not have a PlanIt account.`);
+            }
         } else {
             console.log(`NOTE: No refresh_token received for ${userEmail}. User likely already authorized.`);
         }
@@ -220,7 +230,10 @@ apiRouter.post('/google/sync', verifyAuth, async (req, res) => {
     const userEmail = req.user.email;
     const { events: planItEvents } = req.body;
 
-    const refreshToken = googleRefreshTokens[userEmail];
+    // Get the user fresh from the DB to ensure we have the token
+    const user = await DB.getUser(userEmail);
+    const refreshToken = user ? user.googleRefreshToken : null;
+
     if (!refreshToken) {
         return res.status(400).send({ msg: 'User has not authorized Google Calendar. Please "1. Authorize with Google" first.' });
     }
