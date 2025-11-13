@@ -42,7 +42,7 @@ const getCalendarDays = (year, month) => {
 
 const Calendar = () => {
     const { events, authStatus } = useAppContext(); // <-- Get authStatus
-    const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 21));
+    const [currentDate, setCurrentDate] = useState(new Date());
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [syncMessage, setSyncMessage] = useState(null); // <-- Add state for sync feedback
 
