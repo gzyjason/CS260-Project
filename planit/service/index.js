@@ -80,37 +80,52 @@ const verifyAuth = async (req, res, next) => {
 // =================================================================
 
 apiRouter.post('/auth/create', async (req, res) => {
-    if (await findUser('email', req.body.email)) {
-        res.status(409).send({ msg: 'Existing user' });
-    } else {
-        const user = await createUser(req.body.email, req.body.password);
-        setAuthCookie(res, user.token);
-        res.send({ email: user.email });
+    try {
+        if (await findUser('email', req.body.email)) {
+            res.status(409).send({ msg: 'Existing user' });
+        } else {
+            const user = await createUser(req.body.email, req.body.password);
+            setAuthCookie(res, user.token);
+            res.send({ email: user.email });
+        }
+    } catch (err) {
+        console.error("Error in /auth/create:", err);
+        res.status(500).send({ msg: 'Error creating user', error: err.message });
     }
 });
 
 apiRouter.post('/auth/login', async (req, res) => {
-    const user = await findUser('email', req.body.email);
-    if (user) {
-        if (await bcrypt.compare(req.body.password, user.password)) {
-            user.token = uuid.v4();
-            await DB.updateUser(user); // Update token in DB
-            setAuthCookie(res, user.token);
-            res.send({ email: user.email });
-            return;
+    try {
+        const user = await findUser('email', req.body.email);
+        if (user) {
+            if (await bcrypt.compare(req.body.password, user.password)) {
+                user.token = uuid.v4();
+                await DB.updateUser(user); // Update token in DB
+                setAuthCookie(res, user.token);
+                res.send({ email: user.email });
+                return;
+            }
         }
+        res.status(401).send({ msg: 'Unauthorized' });
+    } catch (err) {
+        console.error("Error in /auth/login:", err);
+        res.status(500).send({ msg: 'Error logging in', error: err.message });
     }
-    res.status(401).send({ msg: 'Unauthorized' });
 });
 
 apiRouter.delete('/auth/logout', async (req, res) => {
-    const user = await findUser('token', req.cookies[authCookieName]);
-    if (user) {
-        delete user.token;
-        await DB.updateUser(user); // Clear token in DB
+    try {
+        const user = await findUser('token', req.cookies[authCookieName]);
+        if (user) {
+            delete user.token;
+            await DB.updateUser(user); // Clear token in DB
+        }
+        res.clearCookie(authCookieName);
+        res.status(204).end();
+    } catch (err) {
+        console.error("Error in /auth/logout:", err);
+        res.status(500).send({ msg: 'Error logging out', error: err.message });
     }
-    res.clearCookie(authCookieName);
-    res.status(204).end();
 });
 
 // =================================================================
@@ -225,11 +240,11 @@ apiRouter.post('/google/sync', verifyAuth, async (req, res) => {
                 description: 'Scheduled by PlanIt!',
                 start: {
                     dateTime: new Date(event.date).toISOString(),
-                    timeZone: 'America/Denver',
+                    timeZone: 'America/Denver', // Note: This is hardcoded, consider making it dynamic
                 },
                 end: {
                     dateTime: new Date(new Date(event.date).getTime() + event.durationHours * 60 * 60 * 1000).toISOString(),
-                    timeZone: 'America/Denver',
+                    timeZone: 'America/Denver', // Note: This is hardcoded, consider making it dynamic
                 },
             };
 
@@ -272,53 +287,78 @@ async function ensureDefaultUnavailableTime(userEmail) {
 
 
 apiRouter.get('/events', verifyAuth, async (req, res) => {
-    const userEmail = req.user.email;
-    const events = await DB.getEvents(userEmail);
-    res.send(events);
+    try {
+        const userEmail = req.user.email;
+        const events = await DB.getEvents(userEmail);
+        res.send(events);
+    } catch (err) {
+        console.error("Error in /events GET:", err);
+        res.status(500).send({ msg: 'Error fetching events', error: err.message });
+    }
 });
 
 apiRouter.post('/events', verifyAuth, async (req, res) => {
-    const userEmail = req.user.email;
-    const newEvent = req.body;
-    newEvent.id = uuid.v4();
-    newEvent.ownerEmail = userEmail;
+    try {
+        const userEmail = req.user.email;
+        const newEvent = req.body;
+        newEvent.id = uuid.v4();
+        newEvent.ownerEmail = userEmail;
 
-    const createdEvent = await DB.addEvent(newEvent);
-    res.status(201).send(createdEvent);
+        const createdEvent = await DB.addEvent(newEvent);
+        res.status(201).send(createdEvent);
+    } catch (err) {
+        console.error("Error in /events POST:", err);
+        res.status(500).send({ msg: 'Error adding event', error: err.message });
+    }
 });
 
 apiRouter.get('/unavailable', verifyAuth, async (req, res) => {
-    const userEmail = req.user.email;
-    let unavailableTimes = await DB.getUnavailableTimes(userEmail);
+    try {
+        const userEmail = req.user.email;
+        let unavailableTimes = await DB.getUnavailableTimes(userEmail);
 
-    // Check if the array is empty and add a default one, as per original logic
-    if (unavailableTimes.length === 0) {
-        unavailableTimes = await ensureDefaultUnavailableTime(userEmail);
+        // Check if the array is empty and add a default one, as per original logic
+        if (unavailableTimes.length === 0) {
+            unavailableTimes = await ensureDefaultUnavailableTime(userEmail);
+        }
+
+        res.send(unavailableTimes);
+    } catch (err) {
+        console.error("Error in /unavailable GET:", err);
+        res.status(500).send({ msg: 'Error fetching unavailable times', error: err.message });
     }
-
-    res.send(unavailableTimes);
 });
 
 apiRouter.post('/unavailable', verifyAuth, async (req, res) => {
-    const userEmail = req.user.email;
-    const newTime = req.body;
-    newTime.id = uuid.v4();
-    newTime.ownerEmail = userEmail;
+    try {
+        const userEmail = req.user.email;
+        const newTime = req.body;
+        newTime.id = uuid.v4();
+        newTime.ownerEmail = userEmail;
 
-    const createdTime = await DB.addUnavailableTime(newTime);
-    res.status(201).send(createdTime);
+        const createdTime = await DB.addUnavailableTime(newTime);
+        res.status(201).send(createdTime);
+    } catch (err) {
+        console.error("Error in /unavailable POST:", err);
+        res.status(500).send({ msg: 'Error adding unavailable time', error: err.message });
+    }
 });
 
 apiRouter.delete('/unavailable/:id', verifyAuth, async (req, res) => {
-    const userEmail = req.user.email;
-    const { id } = req.params;
+    try {
+        const userEmail = req.user.email;
+        const { id } = req.params;
 
-    const deletedCount = await DB.removeUnavailableTime(userEmail, id);
+        const deletedCount = await DB.removeUnavailableTime(userEmail, id);
 
-    if (deletedCount === 0) {
-        return res.status(404).send({ msg: 'Time block not found' });
+        if (deletedCount === 0) {
+            return res.status(404).send({ msg: 'Time block not found' });
+        }
+        res.status(204).end();
+    } catch (err) {
+        console.error("Error in /unavailable DELETE:", err);
+        res.status(500).send({ msg: 'Error deleting unavailable time', error: err.message });
     }
-    res.status(204).end();
 });
 
 // =================================================================
