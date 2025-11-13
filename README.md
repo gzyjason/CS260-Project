@@ -88,3 +88,13 @@ For this deliverable I did the following. I checked the box [x] and added a desc
 - [x] **Backend provides service endpoints** - Added backend endpoints to manage all application data.
 - [x] **Frontend calls service endpoints** - Refactored the entire React application to be driven by the backend API.
 - [x] **Supports registration, login, logout, and restricted endpoint** - Implemented a full authentication system using cookies.
+
+## 🚀 Database
+
+For this deliverable I did the following. I checked the box [x] and added a description for things I completed.
+
+- [x] **MongoDB Atlas** - Set up a MongoDB Atlas cluster to host all application data in a planit-db database.
+- [x] **Database Module** - Created a database.js module in the service to handle all database connections and CRUD operations.
+- [x] **Persistent Users** - Migrated user registration and login logic from in-memory arrays to the users collection in MongoDB. This includes storing emails and hashed passwords.
+- [x] **Persistent App Data** - Migrated all application-specific data (calendar events and unavailable times) from in-memory objects to MongoDB collections (events, unavailableTimes), linked to users by their email.
+- [x] **Persistent Google Tokens** - Updated the Google OAuth flow to store the user's googleRefreshToken in their users document, making the Google Calendar integration persistent across server restarts.
