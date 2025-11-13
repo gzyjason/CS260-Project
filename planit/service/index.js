@@ -129,6 +129,18 @@ apiRouter.delete('/auth/logout', async (req, res) => {
     }
 });
 
+// === NEW ENDPOINT ===
+apiRouter.get('/auth/status', verifyAuth, (req, res) => {
+    if (!req.user) {
+        return res.status(401).send({ msg: 'Unauthorized' });
+    }
+    // Send back the user's email and whether they have a Google token
+    res.send({
+        email: req.user.email,
+        hasGoogleAuth: !!req.user.googleRefreshToken // Convert token/null to true/false
+    });
+});
+
 // =================================================================
 // == END: Standard Auth Endpoints
 // =================================================================

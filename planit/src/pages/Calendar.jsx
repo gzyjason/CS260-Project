@@ -41,9 +41,10 @@ const getCalendarDays = (year, month) => {
 
 
 const Calendar = () => {
-    const { events } = useAppContext();
+    const { events, authStatus } = useAppContext(); // <-- Get authStatus
     const [currentDate, setCurrentDate] = useState(new Date(2025, 9, 21));
     const [isModalOpen, setIsModalOpen] = useState(false);
+    const [syncMessage, setSyncMessage] = useState(null); // <-- Add state for sync feedback
 
     const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -71,6 +72,43 @@ const Calendar = () => {
 
     const goToToday = () => {
         setCurrentDate(new Date());
+    };
+
+    // --- NEW: Add Google Sync handlers ---
+    const handleGoogleSync = async () => {
+        setSyncMessage('Syncing...'); // Show feedback
+        try {
+            const response = await fetch('/api/google/sync', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ events: events }) // Send all events
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                setSyncMessage(result.msg); // "Successfully synced 5 events..."
+                alert(result.msg); // Also alert for immediate feedback
+            } else {
+                setSyncMessage(`Error: ${result.msg}`);
+                alert(`Error: ${result.msg}`);
+            }
+        } catch (err) {
+            const msg = `Network error: ${err.message}`;
+            setSyncMessage(msg);
+            alert(msg);
+        }
+    };
+
+    const handleGoogleClick = () => {
+        setSyncMessage(null); // Clear previous message
+        if (authStatus && authStatus.hasGoogleAuth) {
+            // User is authorized, run the sync
+            handleGoogleSync();
+        } else {
+            // Not authorized, start auth flow
+            window.location.href = '/api/auth/google';
+        }
     };
 
 
@@ -102,10 +140,17 @@ const Calendar = () => {
                         <a href="#" title="Share Calendar" className="flex items-center justify-center p-2 border-2 border-[#FFA500] rounded-lg bg-[#FFA500] text-black transition duration-200 hover:opacity-90">
                             <span className="material-symbols-outlined text-xl font-extrabold leading-none">share</span>
                         </a>
-                        <a href="#" title="Sync with Google Calendar" className="flex items-center justify-center p-2 border-2 border-[#FFA500] rounded-lg bg-[#FFA500] text-black transition duration-200 hover:opacity-90">
+                        <button
+                            onClick={handleGoogleClick} // <-- Use new handler
+                            title="Sync with Google Calendar"
+                            className="flex items-center justify-center p-2 border-2 border-[#FFA500] rounded-lg bg-[#FFA500] text-black transition duration-200 hover:opacity-90"
+                        >
                             <span className="font-bold text-xl">G</span>
-                        </a>
+                        </button>
                     </div>
+
+                    {/* NEW: Display sync message */}
+                    {syncMessage && <p className="text-xs text-center md:text-left mt-2 md:mt-0 md:pl-16">{syncMessage}</p>}
 
                     <div className={`${styles.calendarGrid} w-full`}>
                         {dayHeaders.map(day => (

@@ -6,6 +6,7 @@ const AppProvider = ({ children }) => {
     const [userName, setUserNameState] = useState(localStorage.getItem('userName') || 'Guest');
     const [events, setEvents] = useState([]);
     const [unavailableTimes, setUnavailableTimes] = useState([]);
+    const [authStatus, setAuthStatus] = useState({ hasGoogleAuth: false }); // <-- NEW STATE
     const navigate = useNavigate();
 
     // --- FUNCTION DEFINITIONS (Moved up) ---
@@ -36,6 +37,22 @@ const AppProvider = ({ children }) => {
     useEffect(() => {
         if (userName && userName !== 'Guest') {
             console.log("User logged in. Fetching data...");
+
+            // --- NEW: Fetch Auth Status ---
+            fetch('/api/auth/status')
+                .then(res => {
+                    if (!res.ok) { // Check if response is successful
+                        throw new Error(`Auth status failed with ${res.status}`);
+                    }
+                    return res.json();
+                })
+                .then(status => {
+                    setAuthStatus(status); // status is { email: '...', hasGoogleAuth: true/false }
+                })
+                .catch(err => {
+                    console.error("Failed to fetch auth status:", err.message);
+                    logout(); // If this fails, we're not authenticated.
+                });
 
             // --- Robust Fetch for Events ---
             fetch('/api/events')
@@ -75,8 +92,10 @@ const AppProvider = ({ children }) => {
             console.log("User is Guest. Clearing data.");
             setEvents([]);
             setUnavailableTimes([]);
+            setAuthStatus({ hasGoogleAuth: false }); // Reset auth status
         }
-    }, [userName, logout]); // Add 'logout' to dependency array
+        // --- FIX: Add state setters and logout's dependencies to array ---
+    }, [userName, logout, setEvents, setUnavailableTimes, setAuthStatus, navigate, setUserName]);
 
 
     // --- API-Modifying Functions ---
@@ -137,7 +156,8 @@ const AppProvider = ({ children }) => {
         unavailableTimes,
         addUnavailableTime,
         removeUnavailableTime,
-        logout
+        logout,
+        authStatus // <-- PASS NEW STATE
     };
 
     return (
