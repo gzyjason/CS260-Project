@@ -23,6 +23,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(express.static('public')); // Serve static files
 
+app.use((req, res, next) => {
+    console.log(`[HTTP] ${req.method} ${req.url}`);
+    next();
+});
+
 // API router
 const apiRouter = express.Router();
 app.use(`/api`, apiRouter);
@@ -37,7 +42,7 @@ const server = app.listen(port, () => {
 });
 
 server.on('upgrade', (request, socket, head) => {
-    console.log(`[DEBUG] Upgrade request received for URL: ${request.url}`);
+    console.log(`[WS-Upgrade] Request from ${request.headers.origin} to ${request.url}`);
     // Note: We don't handle the upgrade here; we just log it.
     // The WebSocketServer below picks it up automatically.
 });
