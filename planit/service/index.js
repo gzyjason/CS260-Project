@@ -228,6 +228,7 @@ apiRouter.post('/team', verifyAuth, async (req, res) => {
         await DB.addTeammate(userEmail, teammateEmail);
         res.status(200).send({ msg: `Added ${teammateEmail} to your team` });
     } catch (err) {
+        console.error("Error adding teammate:", err);
         res.status(500).send({ msg: 'Error adding teammate', error: err.message });
     }
 });
