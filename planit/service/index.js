@@ -295,14 +295,12 @@ apiRouter.get('/auth/google/callback', async (req, res) => {
         const oAuth2Client = await getOAuth2Client();
         const { tokens } = await oAuth2Client.getToken(code);
 
-        // [DEBUG] Log the tokens to see if we have an access_token
-        console.log('[Google Auth] Tokens received:', Object.keys(tokens));
-
+        // 1. Set credentials on the client (important for future calls)
         oAuth2Client.setCredentials(tokens);
 
         let userEmail;
 
-        // METHOD A: Try getting email from ID Token (Faster & more reliable)
+        // 2. PREFERRED METHOD: Get email directly from ID Token (No extra API call needed)
         if (tokens.id_token) {
             const ticket = await oAuth2Client.verifyIdToken({
                 idToken: tokens.id_token,
@@ -310,22 +308,22 @@ apiRouter.get('/auth/google/callback', async (req, res) => {
             });
             const payload = ticket.getPayload();
             userEmail = payload.email;
-            console.log(`[Google Auth] Email from ID Token: ${userEmail}`);
+            console.log(`[Google Auth] Email extracted from ID Token: ${userEmail}`);
         }
 
-        // METHOD B: Fallback to UserInfo API (The old way)
+        // 3. FALLBACK: Use UserInfo API only if ID Token failed
         if (!userEmail) {
+            console.log('[Google Auth] ID Token missing, trying UserInfo API...');
             const oauth2 = google.oauth2({ version: 'v2', auth: oAuth2Client });
             const { data } = await oauth2.userinfo.get();
             userEmail = data.email;
-            console.log(`[Google Auth] Email from API: ${userEmail}`);
         }
 
         if (!userEmail) {
             throw new Error("Could not retrieve user's email from Google.");
         }
 
-        // ... Rest of your existing logic ...
+        // 4. Save/Update User Logic
         if (tokens.refresh_token) {
             const user = await DB.getUser(userEmail);
             if (user) {
@@ -335,16 +333,12 @@ apiRouter.get('/auth/google/callback', async (req, res) => {
             } else {
                 console.log(`NOTE: User ${userEmail} authorized Google but does not have a PlanIt account.`);
             }
-        } else {
-            console.log(`NOTE: No refresh_token received for ${userEmail}. User likely already authorized.`);
         }
 
         res.redirect('/preferences');
 
     } catch (err) {
         console.error('Error exchanging Google token:', err);
-        // Log the full error response from Google if available
-        if (err.response) console.error('Google Error Details:', err.response.data);
         res.status(500).send({ msg: 'Error exchanging Google token', error: err.message });
     }
 });
