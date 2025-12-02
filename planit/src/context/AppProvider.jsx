@@ -88,8 +88,17 @@ const AppProvider = ({ children }) => {
                     console.error("Failed to fetch unavailable times:", err.message);
                     logout(); // <-- FIX 2
                 });
+        } else {
+            setEvents([]);
+            setUnavailableTimes([]);
+            setAuthStatus({ hasGoogleAuth: false });
+        }
+    }, [userName, logout, setEvents, setUnavailableTimes, setAuthStatus, navigate, setUserName]);
+
+    useEffect(() => {
+        // Only connect if we have a valid logged-in user
+        if (userName && userName !== 'Guest') {
             const protocol = window.location.protocol === 'http:' ? 'ws' : 'wss';
-            // Connect to the current host
             const socket = new WebSocket(`${protocol}://${window.location.host}/ws`);
 
             socket.onopen = () => {
@@ -98,10 +107,7 @@ const AppProvider = ({ children }) => {
 
             socket.onmessage = (event) => {
                 const msg = JSON.parse(event.data);
-                console.log('WebSocket received:', msg);
-
                 if (msg.type === 'eventAdded') {
-                    // Update state with the new event from server
                     const newEvent = { ...msg.data, date: new Date(msg.data.date) };
                     setEvents(prev => [...prev, newEvent]);
                 } else if (msg.type === 'unavailableAdded') {
@@ -111,17 +117,14 @@ const AppProvider = ({ children }) => {
                 }
             };
 
+            // Cleanup: Close socket when component unmounts or userName changes
             return () => {
-                socket.close();
+                if (socket.readyState === 1) { // 1 = OPEN
+                    socket.close();
+                }
             };
-        } else {
-            console.log("User is Guest. Clearing data.");
-            setEvents([]);
-            setUnavailableTimes([]);
-            setAuthStatus({ hasGoogleAuth: false }); // Reset auth status
         }
-    }, [userName, logout, setEvents, setUnavailableTimes, setAuthStatus, navigate, setUserName]);
-
+    }, [userName]);
 
     // --- API-Modifying Functions ---
 
