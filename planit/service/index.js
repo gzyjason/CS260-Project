@@ -35,9 +35,8 @@ const server = app.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
 
-// 2. Create WebSocket Server attached to the HTTP server
-const wss = new WebSocketServer({ server });
-
+// 2. Create the WebSocket server
+const wss = new WebSocketServer({ server, path: '/ws' });
 // 3. Handle connections
 wss.on('connection', async (ws, req) => {
     const cookieString = req.headers.cookie || '';
