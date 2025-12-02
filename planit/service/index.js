@@ -39,18 +39,44 @@ const server = app.listen(port, () => {
 const wss = new WebSocketServer({ server });
 
 // 3. Handle connections
-wss.on('connection', (ws) => {
-    console.log('Client connected');
+wss.on('connection', async (ws, req) => {
+    const cookieString = req.headers.cookie || '';
+    const tokenCookie = cookieString
+        .split('; ')
+        .find(row => row.startsWith(`${authCookieName}=`));
+
+    const token = tokenCookie ? tokenCookie.split('=')[1] : null;
+
+    if (token) {
+        const user = await DB.getUserByToken(token);
+        if (user) {
+            // 2. Attach the email to the connection object for later identification
+            ws.userEmail = user.email;
+            console.log(`Client connected: ${user.email}`);
+        } else {
+            console.log('Client connected with invalid token');
+            ws.close();
+        }
+    } else {
+        console.log('Client connected without auth token');
+        ws.close();
+    }
 
     ws.on('close', () => {
-        console.log('Client disconnected');
+        // console.log('Client disconnected');
     });
 });
 
-// 4. Create a broadcast function to notify all clients
-function broadcastMessage(type, data) {
+async function broadcastMessage(type, data, ownerEmail) {
+    // Fetch the owner's team from the database
+    const team = await DB.getTeam(ownerEmail);
+
+    // The "Audience" is the owner plus everyone in their team
+    const audience = new Set([...team, ownerEmail]);
+
     wss.clients.forEach((client) => {
-        if (client.readyState === 1) { // 1 = OPEN
+        // Only send if the client is authenticated AND in the audience
+        if (client.readyState === 1 && client.userEmail && audience.has(client.userEmail)) {
             client.send(JSON.stringify({ type, data }));
         }
     });
@@ -164,7 +190,6 @@ apiRouter.delete('/auth/logout', async (req, res) => {
     }
 });
 
-// === NEW ENDPOINT ===
 apiRouter.get('/auth/status', verifyAuth, (req, res) => {
     if (!req.user) {
         return res.status(401).send({ msg: 'Unauthorized' });
@@ -174,6 +199,24 @@ apiRouter.get('/auth/status', verifyAuth, (req, res) => {
         email: req.user.email,
         hasGoogleAuth: !!req.user.googleRefreshToken // Convert token/null to true/false
     });
+});
+
+apiRouter.post('/team', verifyAuth, async (req, res) => {
+    try {
+        const userEmail = req.user.email;
+        const { teammateEmail } = req.body;
+
+        // Simple validation: Ensure teammate exists (optional, but good practice)
+        const teammate = await findUser('email', teammateEmail);
+        if (!teammate) {
+            return res.status(404).send({ msg: 'User not found' });
+        }
+
+        await DB.addTeammate(userEmail, teammateEmail);
+        res.status(200).send({ msg: `Added ${teammateEmail} to your team` });
+    } catch (err) {
+        res.status(500).send({ msg: 'Error adding teammate', error: err.message });
+    }
 });
 
 // =================================================================
@@ -366,7 +409,7 @@ apiRouter.post('/events', verifyAuth, async (req, res) => {
 
         const createdEvent = await DB.addEvent(newEvent);
 
-        broadcastMessage('eventAdded', createdEvent);
+        broadcastMessage('eventAdded', createdEvent, userEmail);
 
         res.status(201).send(createdEvent);
     } catch (err) {
@@ -401,7 +444,7 @@ apiRouter.post('/unavailable', verifyAuth, async (req, res) => {
 
         const createdTime = await DB.addUnavailableTime(newTime);
 
-        broadcastMessage('unavailableAdded', createdTime);
+        broadcastMessage('unavailableAdded', createdTime, userEmail);
 
         res.status(201).send(createdTime);
     } catch (err) {
@@ -421,7 +464,7 @@ apiRouter.delete('/unavailable/:id', verifyAuth, async (req, res) => {
             return res.status(404).send({ msg: 'Time block not found' });
         }
 
-        broadcastMessage('unavailableRemoved', { id });
+        broadcastMessage('unavailableRemoved', { id }, userEmail);
 
         res.status(204).end();
     } catch (err) {
