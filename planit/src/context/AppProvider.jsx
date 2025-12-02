@@ -131,15 +131,7 @@ const AppProvider = ({ children }) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newEvent)
         })
-            .then(res => res.json())
-            .then(createdEvent => {
-                const parsedEvent = {
-                    ...createdEvent,
-                    date: new Date(createdEvent.date)
-                };
-                setEvents(currentEvents => [...currentEvents, parsedEvent]);
-            })
-            .catch(err => console.error("Failed to add event:", err));
+        .catch(err => console.error("Failed to add event:", err));
     };
 
     const addUnavailableTime = (newTime) => {
@@ -148,27 +140,14 @@ const AppProvider = ({ children }) => {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newTime)
         })
-            .then(res => res.json())
-            .then(createdTime => {
-                setUnavailableTimes(currentTimes => [...currentTimes, createdTime]);
-            })
-            .catch(err => console.error("Failed to add unavailable time:", err));
+        .catch(err => console.error("Failed to add unavailable time:", err));
     };
 
     const removeUnavailableTime = (id) => {
         fetch(`/api/unavailable/${id}`, {
             method: 'DELETE'
         })
-            .then(res => {
-                if (res.ok) {
-                    setUnavailableTimes(currentTimes =>
-                        currentTimes.filter(time => time.id !== id)
-                    );
-                } else {
-                    console.error("Failed to delete time block on server");
-                }
-            })
-            .catch(err => console.error("Failed to remove unavailable time:", err));
+        .catch(err => console.error("Failed to remove unavailable time:", err));
     };
 
     // --- Context Value ---
