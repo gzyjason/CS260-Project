@@ -98,3 +98,12 @@ For this deliverable I did the following. I checked the box [x] and added a desc
 - [x] **Persistent Users** - Migrated user registration and login logic from in-memory arrays to the users collection in MongoDB. This includes storing emails and hashed passwords.
 - [x] **Persistent App Data** - Migrated all application-specific data (calendar events and unavailable times) from in-memory objects to MongoDB collections (events, unavailableTimes), linked to users by their email.
 - [x] **Persistent Google Tokens** - Updated the Google OAuth flow to store the user's googleRefreshToken in their users document, making the Google Calendar integration persistent across server restarts.
+
+## 🚀 WebSocket
+
+For this deliverable I did the following. I checked the box [x] and added a description for things I completed.
+
+- [x] **Installed WebSocket** - Installed WebSocket with npm and updated the configuration files to match project's needs.
+- [x] **Updated Backend Logic** - Updated essential backend implementations to reflect the addition of WebSocket.
+- [x] **Updated Frontend** - Added collaboration functionality by changing the button on the calendar page to allow real-time teamwork through WebSocket.
+- [x] **Fixed Google API** - Updated Client Secret file to make Google API functional again.
