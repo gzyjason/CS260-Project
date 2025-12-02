@@ -7,6 +7,7 @@ const { OAuth2Client } = require('google-auth-library');
 const fs = require('fs').promises;
 const path = require('path');
 const DB = require('./database.js'); // <<< IMPORT DATABASE MODULE
+const { WebSocketServer } = require('ws');
 
 const app = express();
 const port = process.argv.length > 2 ? process.argv[2] : 4000;
@@ -24,6 +25,40 @@ app.use(express.static('public')); // Serve static files
 // API router
 const apiRouter = express.Router();
 app.use(`/api`, apiRouter);
+
+// =================================================================
+// == START: WebSocket Setup
+// =================================================================
+
+// 1. Capture the HTTP server instance
+const server = app.listen(port, () => {
+    console.log(`Listening on port ${port}`);
+});
+
+// 2. Create WebSocket Server attached to the HTTP server
+const wss = new WebSocketServer({ server });
+
+// 3. Handle connections
+wss.on('connection', (ws) => {
+    console.log('Client connected');
+
+    ws.on('close', () => {
+        console.log('Client disconnected');
+    });
+});
+
+// 4. Create a broadcast function to notify all clients
+function broadcastMessage(type, data) {
+    wss.clients.forEach((client) => {
+        if (client.readyState === 1) { // 1 = OPEN
+            client.send(JSON.stringify({ type, data }));
+        }
+    });
+}
+
+// =================================================================
+// == END: WebSocket Setup
+// =================================================================
 
 // =================================================================
 // == START: Auth Helper Functions
@@ -330,6 +365,9 @@ apiRouter.post('/events', verifyAuth, async (req, res) => {
         newEvent.ownerEmail = userEmail;
 
         const createdEvent = await DB.addEvent(newEvent);
+
+        broadcastMessage('eventAdded', createdEvent);
+
         res.status(201).send(createdEvent);
     } catch (err) {
         console.error("Error in /events POST:", err);
@@ -362,6 +400,9 @@ apiRouter.post('/unavailable', verifyAuth, async (req, res) => {
         newTime.ownerEmail = userEmail;
 
         const createdTime = await DB.addUnavailableTime(newTime);
+
+        broadcastMessage('unavailableAdded', createdTime);
+
         res.status(201).send(createdTime);
     } catch (err) {
         console.error("Error in /unavailable POST:", err);
@@ -379,6 +420,9 @@ apiRouter.delete('/unavailable/:id', verifyAuth, async (req, res) => {
         if (deletedCount === 0) {
             return res.status(404).send({ msg: 'Time block not found' });
         }
+
+        broadcastMessage('unavailableRemoved', { id });
+
         res.status(204).end();
     } catch (err) {
         console.error("Error in /unavailable DELETE:", err);
@@ -403,9 +447,4 @@ app.use(function (err, req, res, next) {
 // Return frontend for unknown paths (for React Router)
 app.use((_req, res) => {
     res.sendFile('index.html', { root: 'public' });
-});
-
-// Start the server
-app.listen(port, () => {
-    console.log(`Listening on port ${port}`);
 });
