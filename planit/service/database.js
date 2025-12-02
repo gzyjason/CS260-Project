@@ -136,6 +136,8 @@ module.exports = {
     getUserByToken,
     addUser,
     updateUser,
+    addTeammate,
+    getTeam,
     getEvents,
     addEvent,
     getUnavailableTimes,
