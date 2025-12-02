@@ -1,3 +1,4 @@
+const cookie = require('cookie');
 const cookieParser = require('cookie-parser');
 const bcrypt = require('bcryptjs');
 const express = require('express');
@@ -39,25 +40,25 @@ const server = app.listen(port, () => {
 const wss = new WebSocketServer({ server, path: '/ws' });
 // 3. Handle connections
 wss.on('connection', async (ws, req) => {
-    const cookieString = req.headers.cookie || '';
-    const tokenCookie = cookieString
-        .split('; ')
-        .find(row => row.startsWith(`${authCookieName}=`));
-
-    const token = tokenCookie ? tokenCookie.split('=')[1] : null;
+    const cookies = cookie.parse(req.headers.cookie || '');
+    const token = cookies[authCookieName];
 
     if (token) {
-        const user = await DB.getUserByToken(token);
-        if (user) {
-            // 2. Attach the email to the connection object for later identification
-            ws.userEmail = user.email;
-            console.log(`Client connected: ${user.email}`);
-        } else {
-            console.log('Client connected with invalid token');
+        try {
+            const user = await DB.getUserByToken(token);
+            if (user) {
+                ws.userEmail = user.email;
+                console.log(`[WS] Client connected: ${user.email}`);
+            } else {
+                console.log(`[WS] Invalid token: ${token}`);
+                ws.close(); // Close if token doesn't match a user
+            }
+        } catch (err) {
+            console.error('[WS] Database error during connection:', err);
             ws.close();
         }
     } else {
-        console.log('Client connected without auth token');
+        console.log('[WS] Connection attempted without auth token');
         ws.close();
     }
 
