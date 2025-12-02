@@ -88,13 +88,38 @@ const AppProvider = ({ children }) => {
                     console.error("Failed to fetch unavailable times:", err.message);
                     logout(); // <-- FIX 2
                 });
+            const protocol = window.location.protocol === 'http:' ? 'ws' : 'wss';
+            // Connect to the current host
+            const socket = new WebSocket(`${protocol}://${window.location.host}/ws`);
+
+            socket.onopen = () => {
+                console.log('WebSocket connected');
+            };
+
+            socket.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
+                console.log('WebSocket received:', msg);
+
+                if (msg.type === 'eventAdded') {
+                    // Update state with the new event from server
+                    const newEvent = { ...msg.data, date: new Date(msg.data.date) };
+                    setEvents(prev => [...prev, newEvent]);
+                } else if (msg.type === 'unavailableAdded') {
+                    setUnavailableTimes(prev => [...prev, msg.data]);
+                } else if (msg.type === 'unavailableRemoved') {
+                    setUnavailableTimes(prev => prev.filter(t => t.id !== msg.data.id));
+                }
+            };
+
+            return () => {
+                socket.close();
+            };
         } else {
             console.log("User is Guest. Clearing data.");
             setEvents([]);
             setUnavailableTimes([]);
             setAuthStatus({ hasGoogleAuth: false }); // Reset auth status
         }
-        // --- FIX: Add state setters and logout's dependencies to array ---
     }, [userName, logout, setEvents, setUnavailableTimes, setAuthStatus, navigate, setUserName]);
 
 
