@@ -4,14 +4,12 @@ import Footer from '../components/Footer';
 import styles from './Calendar.module.css';
 import { useAppContext } from '../hooks/useAppContext.js';
 import AddEventModal from '../components/AddEventModal';
-
+import CollabModal from '../components/CollabModal'; // <--- 1. Import the new modal
 
 const getCalendarDays = (year, month) => {
-    const firstDayOfMonth = new Date(year, month, 1).getDay(); // 0=Sun, 1=Mon,...
+    const firstDayOfMonth = new Date(year, month, 1).getDay();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
-
     const daysArray = [];
-
     const daysInPrevMonth = new Date(year, month, 0).getDate();
     for (let i = 0; i < firstDayOfMonth; i++) {
         daysArray.push({
@@ -19,14 +17,12 @@ const getCalendarDays = (year, month) => {
             isCurrentMonth: false,
         });
     }
-
     for (let i = 1; i <= daysInMonth; i++) {
         daysArray.push({
             date: new Date(year, month, i),
             isCurrentMonth: true,
         });
     }
-
     const remainingCells = 42 - daysArray.length;
     for (let i = 1; i <= remainingCells; i++) {
         daysArray.push({
@@ -34,17 +30,16 @@ const getCalendarDays = (year, month) => {
             isCurrentMonth: false,
         });
     }
-
     return daysArray;
 };
 
 
-
 const Calendar = () => {
-    const { events, authStatus } = useAppContext(); // <-- Get authStatus
+    const { events, authStatus } = useAppContext();
     const [currentDate, setCurrentDate] = useState(new Date());
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [syncMessage, setSyncMessage] = useState(null); // <-- Add state for sync feedback
+    const [isCollabOpen, setIsCollabOpen] = useState(false); // <--- 2. New state for Collab modal
+    const [syncMessage, setSyncMessage] = useState(null);
 
     const dayHeaders = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -74,21 +69,20 @@ const Calendar = () => {
         setCurrentDate(new Date());
     };
 
-    // --- NEW: Add Google Sync handlers ---
     const handleGoogleSync = async () => {
-        setSyncMessage('Syncing...'); // Show feedback
+        setSyncMessage('Syncing...');
         try {
             const response = await fetch('/api/google/sync', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ events: events }) // Send all events
+                body: JSON.stringify({ events: events })
             });
 
             const result = await response.json();
 
             if (response.ok) {
-                setSyncMessage(result.msg); // "Successfully synced 5 events..."
-                alert(result.msg); // Also alert for immediate feedback
+                setSyncMessage(result.msg);
+                alert(result.msg);
             } else {
                 setSyncMessage(`Error: ${result.msg}`);
                 alert(`Error: ${result.msg}`);
@@ -101,12 +95,10 @@ const Calendar = () => {
     };
 
     const handleGoogleClick = () => {
-        setSyncMessage(null); // Clear previous message
+        setSyncMessage(null);
         if (authStatus && authStatus.hasGoogleAuth) {
-            // User is authorized, run the sync
             handleGoogleSync();
         } else {
-            // Not authorized, start auth flow
             window.location.href = '/api/auth/google';
         }
     };
@@ -116,6 +108,8 @@ const Calendar = () => {
         <>
             <Header />
             <AddEventModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+            {/* 3. Render the Collab Modal */}
+            <CollabModal isOpen={isCollabOpen} onClose={() => setIsCollabOpen(false)} />
 
             <main className="p-6 max-w-screen-2xl mx-auto pt-28 min-h-screen">
                 <div className="flex flex-wrap justify-between items-center mb-6 gap-4">
@@ -137,11 +131,17 @@ const Calendar = () => {
                             <span className="material-symbols-outlined text-xl font-extrabold leading-none">add</span>
                         </button>
 
-                        <a href="#" title="Share Calendar" className="flex items-center justify-center p-2 border-2 border-[#FFA500] rounded-lg bg-[#FFA500] text-black transition duration-200 hover:opacity-90">
-                            <span className="material-symbols-outlined text-xl font-extrabold leading-none">share</span>
-                        </a>
+                        {/* 4. REPLACED Share Link with Collab Button */}
                         <button
-                            onClick={handleGoogleClick} // <-- Use new handler
+                            onClick={() => setIsCollabOpen(true)}
+                            title="Collaborate"
+                            className="flex items-center justify-center p-2 border-2 border-[#FFA500] rounded-lg bg-[#FFA500] text-black transition duration-200 hover:opacity-90"
+                        >
+                            <span className="font-bold text-sm">Collab</span>
+                        </button>
+
+                        <button
+                            onClick={handleGoogleClick}
                             title="Sync with Google Calendar"
                             className="flex items-center justify-center p-2 border-2 border-[#FFA500] rounded-lg bg-[#FFA500] text-black transition duration-200 hover:opacity-90"
                         >
@@ -149,10 +149,10 @@ const Calendar = () => {
                         </button>
                     </div>
 
-                    {/* NEW: Display sync message */}
                     {syncMessage && <p className="text-xs text-center md:text-left mt-2 md:mt-0 md:pl-16">{syncMessage}</p>}
 
                     <div className={`${styles.calendarGrid} w-full`}>
+                        {/* ... (Existing Calendar Grid Logic) ... */}
                         {dayHeaders.map(day => (
                             <div key={day} className={`${styles.dayHeader} bg-primary-brand text-creamy-bg text-center py-2 font-semibold text-sm md:text-base`}>
                                 {day}
