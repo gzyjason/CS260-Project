@@ -36,14 +36,22 @@ const server = app.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
 
+server.on('upgrade', (request, socket, head) => {
+    console.log(`[DEBUG] Upgrade request received for URL: ${request.url}`);
+    // Note: We don't handle the upgrade here; we just log it.
+    // The WebSocketServer below picks it up automatically.
+});
 // 2. Create the WebSocket server
 const wss = new WebSocketServer({ server, path: '/ws' });
 // 3. Handle connections
 wss.on('connection', async (ws, req) => {
+    console.log('[WS] Connection handler started');
+
     const cookies = cookie.parse(req.headers.cookie || '');
     const token = cookies[authCookieName];
 
     if (token) {
+        console.log(`[WS] Token found: ${token.substring(0, 8)}...`);
         try {
             const user = await DB.getUserByToken(token);
             if (user) {
