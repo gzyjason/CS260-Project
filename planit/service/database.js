@@ -78,6 +78,25 @@ async function updateUser(user) {
     await users.updateOne({ email: user.email }, { $set: user });
 }
 
+async function addTeammate(userEmail, teammateEmail) {
+    const users = await getCollection('users');
+    // Add the teammate's email to the 'team' array, ensuring no duplicates ($addToSet)
+    await users.updateOne(
+        {email: userEmail},
+        {$addToSet: {team: teammateEmail}}
+    );
+    await users.updateOne(
+        { email: teammateEmail },
+        { $addToSet: { team: userEmail } }
+    )
+}
+
+async function getTeam(userEmail) {
+    const user = await getUser(userEmail);
+    return user?.team || [];
+}
+
+
 // Events
 async function getEvents(userEmail) {
     const events = await getCollection('events');
@@ -109,6 +128,7 @@ async function removeUnavailableTime(userEmail, id) {
     const result = await unavailableTimes.deleteOne({ ownerEmail: userEmail, id: id });
     return result.deletedCount;
 }
+
 
 // Export all CRUD functions
 module.exports = {
